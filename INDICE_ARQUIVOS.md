@@ -7,9 +7,9 @@
 ## 📊 Visão Geral
 
 ```
-Total de Arquivos: 16
+Total de Arquivos: 18
 ├── Módulos Verilog: 10 (.v)
-├── Documentação: 4 (.md)
+├── Documentação: 6 (.md)
 └── Referências: 2 (.pdf)
 ```
 
@@ -49,14 +49,15 @@ Total de Arquivos: 16
 
 ---
 
-## 📚 DOCUMENTAÇÃO (4 arquivos)
+## 📚 DOCUMENTAÇÃO (5 arquivos)
 
 | # | Arquivo | Páginas | Conteúdo |
 |---|---------|---------|----------|
 | 1 | `README.md` | 12 | **Guia Principal**: Arquitetura, testes, troubleshooting |
 | 2 | `DATAPATH_DETALHADO.md` | 15 | **Análise Técnica**: Operações aritméticas e decodificadores |
 | 3 | `VALIDACAO_REQUISITOS_FINAL.md` | 18 | **Validação Oficial**: Comparação item-a-item com PDF |
-| 4 | `PROJETO_COMPLETO.md` | 8 | **Visão Executiva**: Resumo e checklist final |
+| 4 | `CORRECAO_BUG_CRITICO.md` | 22 | **🐛 Correção de Bug**: Análise e solução do bug Mestre-Esteira |
+| 5 | `PROJETO_COMPLETO.md` | 8 | **Visão Executiva**: Resumo e checklist final |
 
 ---
 
@@ -93,8 +94,10 @@ Adicionar ao projeto Quartus:
 Ordem recomendada de leitura:
 1. README.md                           (Visão geral)
 2. PROJETO_COMPLETO.md                 (Resumo executivo)
-3. VALIDACAO_REQUISITOS_FINAL.md       (Validação oficial)
-4. DATAPATH_DETALHADO.md               (Análise técnica)
+3. CORRECAO_BUG_CRITICO.md             (🐛 Correção crítica!)
+4. VALIDACAO_REQUISITOS_FINAL.md       (Validação oficial)
+5. DATAPATH_DETALHADO.md               (Análise técnica)
+6. INDICE_ARQUIVOS.md                  (Este arquivo)
 ```
 
 ---
@@ -143,9 +146,11 @@ Documento                   | Páginas
 README.md                  |   12
 DATAPATH_DETALHADO.md      |   15
 VALIDACAO_REQUISITOS.md    |   18
+CORRECAO_BUG_CRITICO.md    |   22
 PROJETO_COMPLETO.md        |    8
+INDICE_ARQUIVOS.md         |    6
 ---------------------------|--------
-TOTAL                      |   53
+TOTAL                      |   81
 ```
 
 ---
@@ -227,7 +232,9 @@ Avançado:
 - [x] `README.md` (guia principal)
 - [x] `DATAPATH_DETALHADO.md` (análise aritmética)
 - [x] `VALIDACAO_REQUISITOS_FINAL.md` (validação oficial)
+- [x] `CORRECAO_BUG_CRITICO.md` (correção do bug Mestre-Esteira)
 - [x] `PROJETO_COMPLETO.md` (resumo executivo)
+- [x] `INDICE_ARQUIVOS.md` (índice completo)
 
 #### ✅ Validações
 - [x] Código compila sem erros
@@ -245,8 +252,9 @@ Avançado:
 ║                                            ║
 ║   ✅ 10 Módulos Verilog Completos         ║
 ║   ✅ 1160 Linhas de Código                ║
-║   ✅ 53 Páginas de Documentação           ║
+║   ✅ 81 Páginas de Documentação           ║
 ║   ✅ 100% dos Requisitos Atendidos        ║
+║   ✅ Bug Crítico Corrigido                ║
 ║   ✅ Código Sintetizável                  ║
 ║                                            ║
 ║        PROJETO PRONTO PARA ENTREGA        ║
