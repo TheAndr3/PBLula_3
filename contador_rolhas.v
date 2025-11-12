@@ -27,6 +27,7 @@ module contador_rolhas (
     
     reg [1:0] estado_dispensador;
     reg [25:0] timer_dispensador;        // Timer para simulação do dispensador
+    reg adicionar_rolhas_dispensador;    // Sinal interno para adicionar rolhas
     parameter TEMPO_DISPENSADOR = 26'd50000000; // 1 segundo a 50MHz
     
     // Sincronização dos sinais de entrada
@@ -50,49 +51,27 @@ module contador_rolhas (
         end
     end
     
-    // Lógica principal do contador
+    // ========================================================================
+    // BLOCO UNIFICADO: Toda lógica que modifica contador_valor, 
+    //                  estado_dispensador, dispensador_ativo e alarme
+    // ========================================================================
     always @(posedge clk or posedge reset) begin
         if (reset) begin
             contador_valor <= 7'd20;  // Valor inicial: 20 rolhas
             alarme_rolha_vazia <= 1'b0;
-        end else begin
-            // Prioridade: Reposição automática > Reposição manual > Decremento
-            if (estado_dispensador == DISPENSANDO) begin
-                // Durante a reposição automática, não aceita outras operações
-                // O dispensador adiciona 15 rolhas de uma vez ao final
-            end else if (pulso_adicionar && contador_valor < MAX_ROLHAS) begin
-                // Adição manual (SW7)
-                contador_valor <= contador_valor + 1;
-                alarme_rolha_vazia <= 1'b0;
-            end else if (pulso_decrementar && contador_valor > 0) begin
-                // Decremento (vedação)
-                contador_valor <= contador_valor - 1;
-                if (contador_valor == 1) begin
-                    // Vai ficar em 0 após o decremento
-                    alarme_rolha_vazia <= 1'b1;
-                end
-            end
-            
-            // Atualiza alarme se contador já está em 0
-            if (contador_valor == 0) begin
-                alarme_rolha_vazia <= 1'b1;
-            end else begin
-                alarme_rolha_vazia <= 1'b0;
-            end
-        end
-    end
-    
-    // Máquina de estados para o dispensador automático
-    always @(posedge clk or posedge reset) begin
-        if (reset) begin
             estado_dispensador <= IDLE;
             dispensador_ativo <= 1'b0;
             timer_dispensador <= 0;
+            adicionar_rolhas_dispensador <= 1'b0;
         end else begin
+            // ================================================================
+            // PARTE 1: Máquina de estados do dispensador
+            // ================================================================
             case (estado_dispensador)
                 IDLE: begin
                     dispensador_ativo <= 1'b0;
                     timer_dispensador <= 0;
+                    adicionar_rolhas_dispensador <= 1'b0;
                     
                     // Verifica se precisa repor (quando chegar a 5)
                     if (contador_valor == LIMITE_REPOSICAO) begin
@@ -104,16 +83,11 @@ module contador_rolhas (
                 DISPENSANDO: begin
                     dispensador_ativo <= 1'b1;
                     timer_dispensador <= timer_dispensador + 1;
+                    adicionar_rolhas_dispensador <= 1'b0;
                     
                     // Simula o tempo de dispensação (1 segundo)
                     if (timer_dispensador >= TEMPO_DISPENSADOR) begin
-                        // Adiciona as rolhas
-                        if (contador_valor + QTD_REPOSICAO <= MAX_ROLHAS) begin
-                            contador_valor <= contador_valor + QTD_REPOSICAO;
-                        end else begin
-                            contador_valor <= MAX_ROLHAS;
-                        end
-                        
+                        adicionar_rolhas_dispensador <= 1'b1;  // Sinaliza para adicionar
                         estado_dispensador <= AGUARDANDO;
                         dispensador_ativo <= 1'b0;
                         timer_dispensador <= 0;
@@ -122,6 +96,7 @@ module contador_rolhas (
                 
                 AGUARDANDO: begin
                     dispensador_ativo <= 1'b0;
+                    adicionar_rolhas_dispensador <= 1'b0;
                     
                     // Aguarda o contador sair do limite de reposição
                     // (evita reposições múltiplas consecutivas)
@@ -134,8 +109,40 @@ module contador_rolhas (
                 default: begin
                     estado_dispensador <= IDLE;
                     dispensador_ativo <= 1'b0;
+                    adicionar_rolhas_dispensador <= 1'b0;
                 end
             endcase
+            
+            // ================================================================
+            // PARTE 2: Lógica de modificação do contador_valor
+            // Prioridade: Reposição automática > Reposição manual > Decremento
+            // ================================================================
+            if (adicionar_rolhas_dispensador) begin
+                // Reposição automática do dispensador (+15)
+                if (contador_valor + QTD_REPOSICAO <= MAX_ROLHAS) begin
+                    contador_valor <= contador_valor + QTD_REPOSICAO;
+                end else begin
+                    contador_valor <= MAX_ROLHAS;
+                end
+            end else if (pulso_adicionar && contador_valor < MAX_ROLHAS) begin
+                // Adição manual (SW7) (+1)
+                contador_valor <= contador_valor + 1;
+            end else if (pulso_decrementar && contador_valor > 0) begin
+                // Decremento (vedação) (-1)
+                contador_valor <= contador_valor - 1;
+            end
+            
+            // ================================================================
+            // PARTE 3: Atualização do alarme
+            // ================================================================
+            if (contador_valor == 0) begin
+                alarme_rolha_vazia <= 1'b1;
+            end else if (contador_valor == 1 && pulso_decrementar) begin
+                // Vai ficar em 0 após o decremento
+                alarme_rolha_vazia <= 1'b1;
+            end else begin
+                alarme_rolha_vazia <= 1'b0;
+            end
         end
     end
 
