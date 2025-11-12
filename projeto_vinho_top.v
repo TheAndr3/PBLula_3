@@ -77,15 +77,16 @@ module projeto_vinho_top (
     wire pulso_start;
     wire pulso_reset;
     
-    // Sinais da FSM Mestre
-    wire cmd_mover_esteira;
+    // Sinais da FSM Mestre (COMANDOS DISTINTOS)
+    wire cmd_mover_para_enchimento;
+    wire cmd_mover_para_cq;
+    wire cmd_mover_para_final;
     wire cmd_encher;
     wire cmd_vedar;
     wire cmd_verificar_cq;
     wire incrementar_duzia;
     
     // Sinais das FSMs Escravas
-    wire esteira_concluida;
     wire enchimento_concluido;
     wire vedacao_concluida;
     wire cq_concluida;
@@ -96,32 +97,24 @@ module projeto_vinho_top (
     wire [6:0] contador_rolhas;
     wire [6:0] contador_duzias;
     
-    // Sinais combinados para a FSM Esteira
-    // A FSM esteira precisa saber qual sensor usar dependendo do contexto
-    // Vamos criar uma lógica simples: usará diferentes sensores em momentos diferentes
-    // Para simplificar, vamos usar um MUX controlado pelo estado da FSM Mestre
-    
     // NOTA: A FSM Esteira será usada para todos os movimentos
     // O sensor apropriado deve ser selecionado baseado no comando atual
     // Vamos criar 3 instâncias separadas para maior clareza
     
     // Movimento 1: Até enchimento (sensor SW0)
     wire motor_ativo_1;
-    wire esteira_concluida_1;
+    wire esteira_concluida_enchimento;
     
     // Movimento 2: Até CQ (sensor SW2)
     wire motor_ativo_2;
-    wire esteira_concluida_2;
+    wire esteira_concluida_cq;
     
     // Movimento 3: Até final (sensor SW4)
     wire motor_ativo_3;
-    wire esteira_concluida_3;
+    wire esteira_concluida_final;
     
     // Combinar os motores (OR lógico - qualquer um ativo liga o motor)
     assign motor_ativo = motor_ativo_1 | motor_ativo_2 | motor_ativo_3;
-    
-    // Combinar os sinais de conclusão (OR lógico)
-    assign esteira_concluida = esteira_concluida_1 | esteira_concluida_2 | esteira_concluida_3;
     
     // ========================================================================
     // INSTANCIAÇÃO DOS MÓDULOS
@@ -147,15 +140,19 @@ module projeto_vinho_top (
         .alarme_rolha(alarme_rolha_vazia),
         .sensor_final(sensor_final),
         
-        // Sinais das FSMs escravas
-        .esteira_concluida(esteira_concluida),
+        // Sinais das FSMs escravas (DISTINTOS)
+        .esteira_concluida_enchimento(esteira_concluida_enchimento),
+        .esteira_concluida_cq(esteira_concluida_cq),
+        .esteira_concluida_final(esteira_concluida_final),
         .enchimento_concluido(enchimento_concluido),
         .vedacao_concluida(vedacao_concluida),
         .cq_concluida(cq_concluida),
         .garrafa_aprovada(garrafa_aprovada),
         
-        // Comandos para FSMs escravas
-        .cmd_mover_esteira(cmd_mover_esteira),
+        // Comandos para FSMs escravas (DISTINTOS)
+        .cmd_mover_para_enchimento(cmd_mover_para_enchimento),
+        .cmd_mover_para_cq(cmd_mover_para_cq),
+        .cmd_mover_para_final(cmd_mover_para_final),
         .cmd_encher(cmd_encher),
         .cmd_vedar(cmd_vedar),
         .cmd_verificar_cq(cmd_verificar_cq),
@@ -170,11 +167,11 @@ module projeto_vinho_top (
     fsm_esteira fsm_esteira_1 (
         .clk(clk),
         .reset(reset),
-        .cmd_mover(cmd_mover_esteira),
+        .cmd_mover(cmd_mover_para_enchimento),
         .sensor_destino(sensor_posicao_enchimento),
         .alarme_rolha(alarme_rolha_vazia),
         .motor_ativo(motor_ativo_1),
-        .tarefa_concluida(esteira_concluida_1)
+        .tarefa_concluida(esteira_concluida_enchimento)
     );
     
     // ------------------------------------------------------------------------
@@ -183,11 +180,11 @@ module projeto_vinho_top (
     fsm_esteira fsm_esteira_2 (
         .clk(clk),
         .reset(reset),
-        .cmd_mover(cmd_mover_esteira),
+        .cmd_mover(cmd_mover_para_cq),
         .sensor_destino(sensor_posicao_cq),
         .alarme_rolha(alarme_rolha_vazia),
         .motor_ativo(motor_ativo_2),
-        .tarefa_concluida(esteira_concluida_2)
+        .tarefa_concluida(esteira_concluida_cq)
     );
     
     // ------------------------------------------------------------------------
@@ -196,11 +193,11 @@ module projeto_vinho_top (
     fsm_esteira fsm_esteira_3 (
         .clk(clk),
         .reset(reset),
-        .cmd_mover(cmd_mover_esteira),
+        .cmd_mover(cmd_mover_para_final),
         .sensor_destino(sensor_final),
         .alarme_rolha(alarme_rolha_vazia),
         .motor_ativo(motor_ativo_3),
-        .tarefa_concluida(esteira_concluida_3)
+        .tarefa_concluida(esteira_concluida_final)
     );
     
     // ------------------------------------------------------------------------

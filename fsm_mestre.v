@@ -13,15 +13,19 @@ module fsm_mestre (
     input wire alarme_rolha,                 // Alarme de falta de rolha
     input wire sensor_final,                 // SW4 - Sensor final da esteira
     
-    // Sinais das FSMs escravas
-    input wire esteira_concluida,            // Esteira finalizou movimento
+    // Sinais das FSMs escravas (DISTINTOS)
+    input wire esteira_concluida_enchimento, // Esteira 1 (Enchimento) concluída
+    input wire esteira_concluida_cq,         // Esteira 2 (CQ) concluída
+    input wire esteira_concluida_final,      // Esteira 3 (Final) concluída
     input wire enchimento_concluido,         // Enchimento finalizado
     input wire vedacao_concluida,            // Vedação finalizada
     input wire cq_concluida,                 // Controle de qualidade finalizado
     input wire garrafa_aprovada,             // Garrafa foi aprovada no CQ
     
-    // Comandos para FSMs escravas
-    output reg cmd_mover_esteira,            // Comando para mover esteira
+    // Comandos para FSMs escravas (DISTINTOS)
+    output reg cmd_mover_para_enchimento,    // Comando para FSM Esteira 1
+    output reg cmd_mover_para_cq,            // Comando para FSM Esteira 2
+    output reg cmd_mover_para_final,         // Comando para FSM Esteira 3
     output reg cmd_encher,                   // Comando para encher
     output reg cmd_vedar,                    // Comando para vedar
     output reg cmd_verificar_cq,             // Comando para verificar CQ
@@ -105,7 +109,7 @@ module fsm_mestre (
                 end
                 
                 AGUARDA_ESTEIRA_1: begin
-                    if (esteira_concluida) begin
+                    if (esteira_concluida_enchimento) begin
                         // Esteira parou no sensor de enchimento
                         estado_atual <= ENCHENDO;
                     end
@@ -155,7 +159,7 @@ module fsm_mestre (
                 end
                 
                 AGUARDA_ESTEIRA_2: begin
-                    if (esteira_concluida) begin
+                    if (esteira_concluida_cq) begin
                         // Esteira parou no sensor CQ
                         estado_atual <= VERIFICANDO_CQ;
                     end
@@ -192,7 +196,7 @@ module fsm_mestre (
                 end
                 
                 AGUARDA_ESTEIRA_3: begin
-                    if (esteira_concluida) begin
+                    if (esteira_concluida_final) begin
                         // Esteira parou no sensor final
                         estado_atual <= CONTANDO_FINAL;
                     end
@@ -224,14 +228,18 @@ module fsm_mestre (
     // ========================================================================
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            cmd_mover_esteira <= 1'b0;
+            cmd_mover_para_enchimento <= 1'b0;
+            cmd_mover_para_cq <= 1'b0;
+            cmd_mover_para_final <= 1'b0;
             cmd_encher <= 1'b0;
             cmd_vedar <= 1'b0;
             cmd_verificar_cq <= 1'b0;
             incrementar_duzia <= 1'b0;
         end else begin
             // Valores padrão
-            cmd_mover_esteira <= 1'b0;
+            cmd_mover_para_enchimento <= 1'b0;
+            cmd_mover_para_cq <= 1'b0;
+            cmd_mover_para_final <= 1'b0;
             cmd_encher <= 1'b0;
             cmd_vedar <= 1'b0;
             cmd_verificar_cq <= 1'b0;
@@ -239,7 +247,7 @@ module fsm_mestre (
             
             case (estado_atual)
                 MOVER_PARA_ENCHIMENTO, AGUARDA_ESTEIRA_1: begin
-                    cmd_mover_esteira <= 1'b1;
+                    cmd_mover_para_enchimento <= 1'b1;
                 end
                 
                 ENCHENDO, AGUARDA_ENCHIMENTO: begin
@@ -251,7 +259,7 @@ module fsm_mestre (
                 end
                 
                 MOVER_PARA_CQ, AGUARDA_ESTEIRA_2: begin
-                    cmd_mover_esteira <= 1'b1;
+                    cmd_mover_para_cq <= 1'b1;
                 end
                 
                 VERIFICANDO_CQ, AGUARDA_CQ: begin
@@ -259,7 +267,7 @@ module fsm_mestre (
                 end
                 
                 MOVER_PARA_FINAL, AGUARDA_ESTEIRA_3: begin
-                    cmd_mover_esteira <= 1'b1;
+                    cmd_mover_para_final <= 1'b1;
                 end
                 
                 CONTANDO_FINAL: begin
