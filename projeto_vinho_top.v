@@ -233,6 +233,7 @@ module projeto_vinho_top (
         .reset(reset),
         .cmd_verificar(cmd_verificar_cq),
         .sensor_cq(sensor_posicao_cq),
+        .pulso_start(pulso_start),
         .resultado_cq(resultado_cq),
         .descarte_ativo(descarte_ativo),
         .garrafa_aprovada(garrafa_aprovada),
@@ -259,7 +260,6 @@ module projeto_vinho_top (
         .clk(clk),
         .reset(reset),
         .incrementar(incrementar_duzia),
-        .reset_manual(pulso_start),
         .contador_valor(contador_duzias)
     );
     

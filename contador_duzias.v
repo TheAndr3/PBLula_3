@@ -2,7 +2,6 @@
 // Módulo: contador_duzias.v
 // Descrição: Contador de dúzias (garrafas aprovadas)
 //            Incrementa quando sensor final detecta garrafa
-//            Reset manual ao pressionar START
 //            Reset automático ao atingir 10 dúzias
 // Tipo: Verilog COMPORTAMENTAL
 // ============================================================================
@@ -11,7 +10,6 @@ module contador_duzias (
     input wire clk,                      // Clock de 50MHz
     input wire reset,                    // Reset global
     input wire incrementar,              // Sinal para incrementar (sensor final)
-    input wire reset_manual,             // Pulso do botão START (KEY0)
     output reg [6:0] contador_valor      // Valor do contador (0-99)
 );
 
@@ -39,12 +37,8 @@ module contador_duzias (
         if (reset) begin
             contador_valor <= 7'd0;
         end else begin
-            // Reset manual (botão START)
-            if (reset_manual) begin
-                contador_valor <= 7'd0;
-            end
             // Reset automático ao atingir 10 dúzias
-            else if (contador_valor >= MAX_DUZIAS) begin
+            if (contador_valor >= MAX_DUZIAS) begin
                 contador_valor <= 7'd0;
             end
             // Incremento normal

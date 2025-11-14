@@ -183,7 +183,7 @@ module fsm_mestre (
                             estado_atual <= MOVER_PARA_FINAL;
                         end else begin
                             // Garrafa reprovada, volta ao início
-                            estado_atual <= IDLE;
+                            estado_atual <= MOVER_PARA_ENCHIMENTO;
                         end
                     end
                 end
@@ -212,7 +212,7 @@ module fsm_mestre (
                     // Aguarda o sensor final detectar a garrafa
                     if (pulso_sensor_final) begin
                         // Garrafa contada, volta ao início para próxima
-                        estado_atual <= IDLE;
+                        estado_atual <= MOVER_PARA_ENCHIMENTO;
                     end
                 end
                 

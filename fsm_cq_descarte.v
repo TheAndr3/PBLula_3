@@ -11,6 +11,7 @@ module fsm_cq_descarte (
     input wire reset,                    // Reset global
     input wire cmd_verificar,            // Comando do mestre para verificar CQ
     input wire sensor_cq,                // SW2 - Sensor de posição CQ
+    input wire pulso_start,              // KEY[0] para confirmar decisão
     input wire resultado_cq,             // SW3 - Resultado CQ (0=Reprovado, 1=Aprovado)
     output reg descarte_ativo,           // LEDR[6] - Atuador de descarte
     output reg garrafa_aprovada,         // Sinal para incrementar contador de dúzias
@@ -18,12 +19,13 @@ module fsm_cq_descarte (
 );
 
     // Estados da FSM
-    localparam IDLE = 2'd0;
-    localparam VERIFICANDO = 2'd1;
-    localparam DESCARTANDO = 2'd2;
-    localparam APROVADO = 2'd3;
+    localparam IDLE = 3'd0;
+    localparam VERIFICANDO = 3'd1;
+    localparam AGUARDA_DECISAO = 3'd2;  // Novo estado de pausa
+    localparam DESCARTANDO = 3'd3;
+    localparam APROVADO = 3'd4;
     
-    reg [1:0] estado_atual;
+    reg [2:0] estado_atual;
     
     // Timer para simular o tempo de descarte (0.5 segundos)
     reg [25:0] timer;
@@ -49,6 +51,13 @@ module fsm_cq_descarte (
                 VERIFICANDO: begin
                     // Aguarda o sensor CQ detectar a garrafa
                     if (sensor_cq) begin
+                        estado_atual <= AGUARDA_DECISAO; // Pausa para o operador decidir
+                    end
+                end
+                
+                AGUARDA_DECISAO: begin
+                    // Aguarda o operador pressionar START para confirmar
+                    if (pulso_start) begin
                         // Verifica o resultado do CQ
                         if (resultado_cq == 1'b0) begin
                             // Reprovado - vai para descarte
@@ -100,6 +109,12 @@ module fsm_cq_descarte (
                 end
                 
                 VERIFICANDO: begin
+                    descarte_ativo <= 1'b0;
+                    tarefa_concluida <= 1'b0;
+                    garrafa_aprovada <= 1'b0;
+                end
+                
+                AGUARDA_DECISAO: begin
                     descarte_ativo <= 1'b0;
                     tarefa_concluida <= 1'b0;
                     garrafa_aprovada <= 1'b0;
