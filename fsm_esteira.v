@@ -76,10 +76,10 @@ module fsm_esteira (
     not (not_state_bit1, state_bit1);
     and (motor_ativo_temp, not_state_bit1, state_bit0);
     
-    // O motor também deve ser desligado se o alarme estiver ativo
-    wire not_alarme_rolha;
-    not (not_alarme_rolha, alarme_rolha);
-    and (motor_ativo, motor_ativo_temp, not_alarme_rolha);
+    // Lógica MOORE Pura: Motor ligado APENAS se estiver no estado MOVENDO
+    // Se houver alarme, a transição de estado (always) cuidará de ir para PARADO
+    // no próximo ciclo de clock, e então o motor desligará automaticamente
+    buf (motor_ativo, motor_ativo_temp);
     
     // tarefa_concluida = 1 quando estado_atual == PARADO (10)
     // Ou seja: state_bit1=1 AND state_bit0=0
