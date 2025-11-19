@@ -1,9 +1,9 @@
 // ============================================================================
 // Módulo: fsm_esteira.v
-// Descrição: FSM MEALY para controle do motor da esteira
-//            A saída (MOTOR) reage instantaneamente aos sensores
-//            Garante parada precisa quando sensor é ativado
-// Tipo: Verilog COMPORTAMENTAL (FSM MEALY)
+// Descrição: FSM MOORE para controle do motor da esteira
+//            A saída (MOTOR) depende apenas do estado atual
+//            Conversão de Mealy para Moore conforme requisitos
+// Tipo: Verilog HÍBRIDO (Comportamental para transições, Estrutural para saídas)
 // ============================================================================
 
 module fsm_esteira (
@@ -12,18 +12,27 @@ module fsm_esteira (
     input wire cmd_mover,                // Comando do mestre para iniciar movimento
     input wire sensor_destino,           // Sensor do destino (SW0, SW2, SW4)
     input wire alarme_rolha,             // Alarme de falta de rolha (para o motor)
-    output reg motor_ativo,              // LEDR[9] - Motor (saída MEALY)
-    output reg tarefa_concluida          // Sinal de volta para o mestre
+    output wire motor_ativo,             // LEDR[9] - Motor (saída MOORE)
+    output wire tarefa_concluida         // Sinal de volta para o mestre
 );
 
     // Estados da FSM
+    // Codificação: IDLE=00, MOVENDO=01, PARADO=10
     localparam IDLE = 2'd0;
     localparam MOVENDO = 2'd1;
     localparam PARADO = 2'd2;
     
     reg [1:0] estado_atual;
     
-    // Lógica de transição de estados (SEQUENCIAL)
+    // Sinais internos para os bits do estado
+    wire state_bit0;  // estado_atual[0]
+    wire state_bit1;  // estado_atual[1]
+    
+    // Extração dos bits do estado
+    buf (state_bit0, estado_atual[0]);
+    buf (state_bit1, estado_atual[1]);
+    
+    // Lógica de transição de estados (SEQUENCIAL - COMPORTAMENTAL)
     always @(posedge clk or posedge reset) begin
         if (reset) begin
             estado_atual <= IDLE;
@@ -57,24 +66,26 @@ module fsm_esteira (
     end
     
     // ========================================================================
-    // LÓGICA MEALY: Saída depende do ESTADO E DA ENTRADA
+    // LÓGICA MOORE: Saídas dependem APENAS do ESTADO (ESTRUTURAL - PORTAS)
     // ========================================================================
-    // CRÍTICO: O motor deve parar INSTANTANEAMENTE quando o sensor é ativado
-    // Se usássemos Moore, o motor continuaria ligado por 1 ciclo de clock a mais
-    always @(*) begin
-        // Motor está ligado SOMENTE se:
-        // 1. Está no estado MOVENDO
-        // 2. Sensor ainda NÃO foi ativado (sensor_destino == 0)
-        // 3. Alarme de rolha NÃO está ativo
-        motor_ativo = (estado_atual == MOVENDO) && 
-                      (!sensor_destino) && 
-                      (!alarme_rolha);
-    end
+    // motor_ativo = 1 quando estado_atual == MOVENDO (01)
+    // Ou seja: state_bit1=0 AND state_bit0=1
+    wire not_state_bit1;
+    wire motor_ativo_temp;
     
-    // Lógica de saída para tarefa_concluida (MOORE - depende só do estado)
-    always @(*) begin
-        tarefa_concluida = (estado_atual == PARADO);
-    end
+    not (not_state_bit1, state_bit1);
+    and (motor_ativo_temp, not_state_bit1, state_bit0);
+    
+    // O motor também deve ser desligado se o alarme estiver ativo
+    wire not_alarme_rolha;
+    not (not_alarme_rolha, alarme_rolha);
+    and (motor_ativo, motor_ativo_temp, not_alarme_rolha);
+    
+    // tarefa_concluida = 1 quando estado_atual == PARADO (10)
+    // Ou seja: state_bit1=1 AND state_bit0=0
+    wire not_state_bit0;
+    not (not_state_bit0, state_bit0);
+    and (tarefa_concluida, state_bit1, not_state_bit0);
 
 endmodule
 

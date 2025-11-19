@@ -23,15 +23,15 @@ module fsm_mestre (
     input wire garrafa_aprovada,             // Garrafa foi aprovada no CQ
     
     // Comandos para FSMs escravas (DISTINTOS)
-    output reg cmd_mover_para_enchimento,    // Comando para FSM Esteira 1
-    output reg cmd_mover_para_cq,            // Comando para FSM Esteira 2
-    output reg cmd_mover_para_final,         // Comando para FSM Esteira 3
-    output reg cmd_encher,                   // Comando para encher
-    output reg cmd_vedar,                    // Comando para vedar
-    output reg cmd_verificar_cq,             // Comando para verificar CQ
+    output wire cmd_mover_para_enchimento,    // Comando para FSM Esteira 1
+    output wire cmd_mover_para_cq,            // Comando para FSM Esteira 2
+    output wire cmd_mover_para_final,         // Comando para FSM Esteira 3
+    output wire cmd_encher,                   // Comando para encher
+    output wire cmd_vedar,                    // Comando para vedar
+    output wire cmd_verificar_cq,             // Comando para verificar CQ
     
     // Sinal para contador de dúzias
-    output reg incrementar_duzia             // Incrementa contador ao final
+    output wire incrementar_duzia             // Incrementa contador ao final
 );
 
     // Estados da FSM Mestre
@@ -56,8 +56,11 @@ module fsm_mestre (
     // Sincronização do sensor final
     reg sensor_final_prev;
     wire pulso_sensor_final;
+    wire not_sensor_final_prev;
     
-    assign pulso_sensor_final = sensor_final && !sensor_final_prev;
+    // Detecta borda de subida usando portas lógicas
+    not (not_sensor_final_prev, sensor_final_prev);
+    and (pulso_sensor_final, sensor_final, not_sensor_final_prev);
     
     always @(posedge clk or posedge reset) begin
         if (reset) begin
@@ -224,63 +227,108 @@ module fsm_mestre (
     end
     
     // ========================================================================
-    // LÓGICA MOORE: Saídas dependem APENAS do ESTADO
+    // LÓGICA MOORE: Saídas dependem APENAS do ESTADO (ESTRUTURAL - PORTAS)
     // ========================================================================
-    always @(posedge clk or posedge reset) begin
-        if (reset) begin
-            cmd_mover_para_enchimento <= 1'b0;
-            cmd_mover_para_cq <= 1'b0;
-            cmd_mover_para_final <= 1'b0;
-            cmd_encher <= 1'b0;
-            cmd_vedar <= 1'b0;
-            cmd_verificar_cq <= 1'b0;
-            incrementar_duzia <= 1'b0;
-        end else begin
-            // Valores padrão
-            cmd_mover_para_enchimento <= 1'b0;
-            cmd_mover_para_cq <= 1'b0;
-            cmd_mover_para_final <= 1'b0;
-            cmd_encher <= 1'b0;
-            cmd_vedar <= 1'b0;
-            cmd_verificar_cq <= 1'b0;
-            incrementar_duzia <= 1'b0;
-            
-            case (estado_atual)
-                MOVER_PARA_ENCHIMENTO, AGUARDA_ESTEIRA_1: begin
-                    cmd_mover_para_enchimento <= 1'b1;
-                end
-                
-                ENCHENDO, AGUARDA_ENCHIMENTO: begin
-                    cmd_encher <= 1'b1;
-                end
-                
-                VEDANDO, AGUARDA_VEDACAO: begin
-                    cmd_vedar <= 1'b1;
-                end
-                
-                MOVER_PARA_CQ, AGUARDA_ESTEIRA_2: begin
-                    cmd_mover_para_cq <= 1'b1;
-                end
-                
-                VERIFICANDO_CQ, AGUARDA_CQ: begin
-                    cmd_verificar_cq <= 1'b1;
-                end
-                
-                MOVER_PARA_FINAL, AGUARDA_ESTEIRA_3: begin
-                    cmd_mover_para_final <= 1'b1;
-                end
-                
-                CONTANDO_FINAL: begin
-                    // Incrementa dúzia quando sensor final detecta
-                    incrementar_duzia <= pulso_sensor_final;
-                end
-                
-                default: begin
-                    // Todos os comandos desligados
-                end
-            endcase
-        end
-    end
+    // Extração dos bits do estado (4 bits: estado_atual[3:0])
+    wire state_bit0, state_bit1, state_bit2, state_bit3;
+    buf (state_bit0, estado_atual[0]);
+    buf (state_bit1, estado_atual[1]);
+    buf (state_bit2, estado_atual[2]);
+    buf (state_bit3, estado_atual[3]);
+    
+    // Sinais intermediários para detecção de estados
+    // Estado 1 (MOVER_PARA_ENCHIMENTO): 0001
+    wire estado_1;
+    wire not_s0, not_s1, not_s2, not_s3;
+    not (not_s0, state_bit0);
+    not (not_s1, state_bit1);
+    not (not_s2, state_bit2);
+    not (not_s3, state_bit3);
+    and (estado_1, not_s3, not_s2, not_s1, state_bit0);
+    
+    // Estado 2 (AGUARDA_ESTEIRA_1): 0010
+    wire estado_2;
+    and (estado_2, not_s3, not_s2, state_bit1, not_s0);
+    
+    // Estado 3 (ENCHENDO): 0011
+    wire estado_3;
+    and (estado_3, not_s3, not_s2, state_bit1, state_bit0);
+    
+    // Estado 4 (AGUARDA_ENCHIMENTO): 0100
+    wire estado_4;
+    and (estado_4, not_s3, state_bit2, not_s1, not_s0);
+    
+    // Estado 5 (VEDANDO): 0101
+    wire estado_5;
+    and (estado_5, not_s3, state_bit2, not_s1, state_bit0);
+    
+    // Estado 6 (AGUARDA_VEDACAO): 0110
+    wire estado_6;
+    and (estado_6, not_s3, state_bit2, state_bit1, not_s0);
+    
+    // Estado 7 (MOVER_PARA_CQ): 0111
+    wire estado_7;
+    and (estado_7, not_s3, state_bit2, state_bit1, state_bit0);
+    
+    // Estado 8 (AGUARDA_ESTEIRA_2): 1000
+    wire estado_8;
+    and (estado_8, state_bit3, not_s2, not_s1, not_s0);
+    
+    // Estado 9 (VERIFICANDO_CQ): 1001
+    wire estado_9;
+    and (estado_9, state_bit3, not_s2, not_s1, state_bit0);
+    
+    // Estado 10 (AGUARDA_CQ): 1010
+    wire estado_10;
+    and (estado_10, state_bit3, not_s2, state_bit1, not_s0);
+    
+    // Estado 11 (MOVER_PARA_FINAL): 1011
+    wire estado_11;
+    and (estado_11, state_bit3, not_s2, state_bit1, state_bit0);
+    
+    // Estado 12 (AGUARDA_ESTEIRA_3): 1100
+    wire estado_12;
+    and (estado_12, state_bit3, state_bit2, not_s1, not_s0);
+    
+    // Estado 13 (CONTANDO_FINAL): 1101
+    wire estado_13;
+    and (estado_13, state_bit3, state_bit2, not_s1, state_bit0);
+    
+    // Saídas usando portas OR para combinar estados
+    // cmd_mover_para_enchimento: estados 1 ou 2
+    wire cmd_mover_ench_temp;
+    or (cmd_mover_ench_temp, estado_1, estado_2);
+    buf (cmd_mover_para_enchimento, cmd_mover_ench_temp);
+    
+    // cmd_encher: estados 3 ou 4
+    wire cmd_encher_temp;
+    or (cmd_encher_temp, estado_3, estado_4);
+    buf (cmd_encher, cmd_encher_temp);
+    
+    // cmd_vedar: estados 5 ou 6
+    wire cmd_vedar_temp;
+    or (cmd_vedar_temp, estado_5, estado_6);
+    buf (cmd_vedar, cmd_vedar_temp);
+    
+    // cmd_mover_para_cq: estados 7 ou 8
+    wire cmd_mover_cq_temp;
+    or (cmd_mover_cq_temp, estado_7, estado_8);
+    buf (cmd_mover_para_cq, cmd_mover_cq_temp);
+    
+    // cmd_verificar_cq: estados 9 ou 10
+    wire cmd_verificar_cq_temp;
+    or (cmd_verificar_cq_temp, estado_9, estado_10);
+    buf (cmd_verificar_cq, cmd_verificar_cq_temp);
+    
+    // cmd_mover_para_final: estados 11 ou 12
+    wire cmd_mover_final_temp;
+    or (cmd_mover_final_temp, estado_11, estado_12);
+    buf (cmd_mover_para_final, cmd_mover_final_temp);
+    
+    // incrementar_duzia: estado 13 AND pulso_sensor_final
+    wire incrementar_duzia_temp;
+    and (incrementar_duzia_temp, estado_13, pulso_sensor_final);
+    buf (incrementar_duzia, incrementar_duzia_temp);
 
 endmodule
 

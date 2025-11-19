@@ -11,8 +11,8 @@ module fsm_enchimento (
     input wire reset,                    // Reset global
     input wire cmd_iniciar,              // Comando do mestre para iniciar enchimento
     input wire sensor_nivel,             // SW1 - Sensor de nível (1 = cheia)
-    output reg valvula_ativa,            // LEDR[8] - Válvula de enchimento
-    output reg tarefa_concluida          // Sinal de volta para o mestre
+    output wire valvula_ativa,           // LEDR[8] - Válvula de enchimento
+    output wire tarefa_concluida         // Sinal de volta para o mestre
 );
 
     // Estados da FSM
@@ -56,38 +56,26 @@ module fsm_enchimento (
     end
     
     // ========================================================================
-    // LÓGICA MOORE: Saída depende APENAS do ESTADO
+    // LÓGICA MOORE: Saídas dependem APENAS do ESTADO (ESTRUTURAL - PORTAS)
     // ========================================================================
-    // A válvula permanece estável durante o estado ENCHENDO
-    // Imune a flutuações no sensor_nivel (ruído)
-    always @(posedge clk or posedge reset) begin
-        if (reset) begin
-            valvula_ativa <= 1'b0;
-            tarefa_concluida <= 1'b0;
-        end else begin
-            case (estado_atual)
-                IDLE: begin
-                    valvula_ativa <= 1'b0;
-                    tarefa_concluida <= 1'b0;
-                end
-                
-                ENCHENDO: begin
-                    valvula_ativa <= 1'b1;  // Válvula LIGADA
-                    tarefa_concluida <= 1'b0;
-                end
-                
-                CONCLUIDO: begin
-                    valvula_ativa <= 1'b0;  // Válvula DESLIGADA
-                    tarefa_concluida <= 1'b1;  // Sinaliza conclusão
-                end
-                
-                default: begin
-                    valvula_ativa <= 1'b0;
-                    tarefa_concluida <= 1'b0;
-                end
-            endcase
-        end
-    end
+    // Extração dos bits do estado (2 bits: estado_atual[1:0])
+    // Codificação: IDLE=00, ENCHENDO=01, CONCLUIDO=10
+    wire state_bit0, state_bit1;
+    buf (state_bit0, estado_atual[0]);
+    buf (state_bit1, estado_atual[1]);
+    
+    // Sinais intermediários
+    wire not_state_bit0, not_state_bit1;
+    not (not_state_bit0, state_bit0);
+    not (not_state_bit1, state_bit1);
+    
+    // valvula_ativa = 1 quando estado_atual == ENCHENDO (01)
+    // Ou seja: state_bit1=0 AND state_bit0=1
+    and (valvula_ativa, not_state_bit1, state_bit0);
+    
+    // tarefa_concluida = 1 quando estado_atual == CONCLUIDO (10)
+    // Ou seja: state_bit1=1 AND state_bit0=0
+    and (tarefa_concluida, state_bit1, not_state_bit0);
 
 endmodule
 

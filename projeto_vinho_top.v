@@ -25,7 +25,7 @@ module projeto_vinho_top (
 );
 
     // ========================================================================
-    // MAPEAMENTO DE ENTRADAS (Sensores)
+    // MAPEAMENTO DE ENTRADAS (Sensores) - ESTRUTURAL
     // ========================================================================
     wire sensor_posicao_enchimento;          // SW[0]
     wire sensor_nivel;                       // SW[1]
@@ -34,15 +34,15 @@ module projeto_vinho_top (
     wire sensor_final;                       // SW[4]
     wire sw_adicionar_rolha;                 // SW[7]
     
-    assign sensor_posicao_enchimento = SW[0];
-    assign sensor_nivel = SW[1];
-    assign sensor_posicao_cq = SW[2];
-    assign resultado_cq = SW[3];
-    assign sensor_final = SW[4];
-    assign sw_adicionar_rolha = SW[7];
+    buf (sensor_posicao_enchimento, SW[0]);
+    buf (sensor_nivel, SW[1]);
+    buf (sensor_posicao_cq, SW[2]);
+    buf (resultado_cq, SW[3]);
+    buf (sensor_final, SW[4]);
+    buf (sw_adicionar_rolha, SW[7]);
     
     // ========================================================================
-    // MAPEAMENTO DE SAÍDAS (Atuadores)
+    // MAPEAMENTO DE SAÍDAS (Atuadores) - ESTRUTURAL
     // ========================================================================
     wire alarme_rolha_vazia;                 // LEDR[0]
     wire dispensador_ativo;                  // LEDR[5]
@@ -51,16 +51,21 @@ module projeto_vinho_top (
     wire valvula_ativa;                      // LEDR[8]
     wire motor_ativo;                        // LEDR[9]
     
-    assign LEDR[0] = alarme_rolha_vazia;
-    assign LEDR[1] = 1'b0;                   // Não usado
-    assign LEDR[2] = 1'b0;                   // Não usado
-    assign LEDR[3] = 1'b0;                   // Não usado
-    assign LEDR[4] = 1'b0;                   // Não usado
-    assign LEDR[5] = dispensador_ativo;
-    assign LEDR[6] = descarte_ativo;
-    assign LEDR[7] = vedacao_ativa;
-    assign LEDR[8] = valvula_ativa;
-    assign LEDR[9] = motor_ativo;
+    // Constantes para LEDs não usados (usando supply0 diretamente)
+    supply0 gnd;  // Fonte de terra (0 lógico)
+    wire zero_const;
+    buf (zero_const, gnd);
+    
+    buf (LEDR[0], alarme_rolha_vazia);
+    buf (LEDR[1], zero_const);               // Não usado
+    buf (LEDR[2], zero_const);               // Não usado
+    buf (LEDR[3], zero_const);               // Não usado
+    buf (LEDR[4], zero_const);               // Não usado
+    buf (LEDR[5], dispensador_ativo);
+    buf (LEDR[6], descarte_ativo);
+    buf (LEDR[7], vedacao_ativa);
+    buf (LEDR[8], valvula_ativa);
+    buf (LEDR[9], motor_ativo);
     
     // ========================================================================
     // SINAIS INTERNOS (WIRES)
@@ -69,9 +74,11 @@ module projeto_vinho_top (
     // Sinais de reset e clock
     wire clk;
     wire reset;
+    wire not_key1;
     
-    assign clk = CLOCK_50;
-    assign reset = ~KEY[1];                  // KEY[1] é ativo baixo
+    buf (clk, CLOCK_50);
+    not (not_key1, KEY[1]);                  // KEY[1] é ativo baixo
+    buf (reset, not_key1);
     
     // Sinais dos debouncers
     wire pulso_start;
@@ -114,7 +121,9 @@ module projeto_vinho_top (
     wire esteira_concluida_final;
     
     // Combinar os motores (OR lógico - qualquer um ativo liga o motor)
-    assign motor_ativo = motor_ativo_1 | motor_ativo_2 | motor_ativo_3;
+    wire motor_temp;
+    or (motor_temp, motor_ativo_1, motor_ativo_2);
+    or (motor_ativo, motor_temp, motor_ativo_3);
     
     // ========================================================================
     // INSTANCIAÇÃO DOS MÓDULOS

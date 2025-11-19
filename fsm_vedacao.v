@@ -11,9 +11,9 @@ module fsm_vedacao (
     input wire reset,                    // Reset global
     input wire cmd_iniciar,              // Comando do mestre para iniciar vedação
     input wire alarme_rolha,             // Alarme de falta de rolha
-    output reg vedacao_ativa,            // LEDR[7] - Atuador de vedação
-    output reg decrementar_rolha,        // Sinal para decrementar contador
-    output reg tarefa_concluida          // Sinal de volta para o mestre
+    output wire vedacao_ativa,           // LEDR[7] - Atuador de vedação
+    output wire decrementar_rolha,       // Sinal para decrementar contador
+    output wire tarefa_concluida         // Sinal de volta para o mestre
 );
 
     // Estados da FSM
@@ -26,16 +26,30 @@ module fsm_vedacao (
     // Timer para simular o tempo de vedação (0.5 segundos)
     reg [25:0] timer;
     parameter TEMPO_VEDACAO = 26'd25000000; // 0.5s a 50MHz
-    wire tempo_completo;
+    reg tempo_completo;
+    reg timer_igual_um;  // Sinal interno para detectar quando timer == 1
     
-    assign tempo_completo = (timer >= TEMPO_VEDACAO);
-    
-    // Lógica de transição de estados (SEQUENCIAL)
+    // Lógica de transição de estados (SEQUENCIAL - COMPORTAMENTAL)
     always @(posedge clk or posedge reset) begin
         if (reset) begin
             estado_atual <= IDLE;
             timer <= 0;
+            tempo_completo <= 1'b0;
+            timer_igual_um <= 1'b0;
         end else begin
+            // Atualiza sinais do timer
+            if (timer >= TEMPO_VEDACAO) begin
+                tempo_completo <= 1'b1;
+            end else begin
+                tempo_completo <= 1'b0;
+            end
+            
+            if (timer == 26'd1) begin
+                timer_igual_um <= 1'b1;
+            end else begin
+                timer_igual_um <= 1'b0;
+            end
+            
             case (estado_atual)
                 IDLE: begin
                     timer <= 0;
@@ -73,42 +87,32 @@ module fsm_vedacao (
     end
     
     // ========================================================================
-    // LÓGICA MOORE: Saída depende APENAS do ESTADO
+    // LÓGICA MOORE: Saídas dependem APENAS do ESTADO (ESTRUTURAL - PORTAS)
     // ========================================================================
-    always @(posedge clk or posedge reset) begin
-        if (reset) begin
-            vedacao_ativa <= 1'b0;
-            tarefa_concluida <= 1'b0;
-            decrementar_rolha <= 1'b0;
-        end else begin
-            case (estado_atual)
-                IDLE: begin
-                    vedacao_ativa <= 1'b0;
-                    tarefa_concluida <= 1'b0;
-                    decrementar_rolha <= 1'b0;
-                end
-                
-                VEDANDO: begin
-                    vedacao_ativa <= 1'b1;  // Vedação ATIVA
-                    tarefa_concluida <= 1'b0;
-                    // Decrementa rolha no início da vedação (pulso único)
-                    decrementar_rolha <= (timer == 1);
-                end
-                
-                CONCLUIDO: begin
-                    vedacao_ativa <= 1'b0;  // Vedação DESLIGADA
-                    tarefa_concluida <= 1'b1;  // Sinaliza conclusão
-                    decrementar_rolha <= 1'b0;
-                end
-                
-                default: begin
-                    vedacao_ativa <= 1'b0;
-                    tarefa_concluida <= 1'b0;
-                    decrementar_rolha <= 1'b0;
-                end
-            endcase
-        end
-    end
+    // Extração dos bits do estado (2 bits: estado_atual[1:0])
+    // Codificação: IDLE=00, VEDANDO=01, CONCLUIDO=10
+    wire state_bit0, state_bit1;
+    buf (state_bit0, estado_atual[0]);
+    buf (state_bit1, estado_atual[1]);
+    
+    // Sinais intermediários
+    wire not_state_bit0, not_state_bit1;
+    not (not_state_bit0, state_bit0);
+    not (not_state_bit1, state_bit1);
+    
+    // vedacao_ativa = 1 quando estado_atual == VEDANDO (01)
+    // Ou seja: state_bit1=0 AND state_bit0=1
+    and (vedacao_ativa, not_state_bit1, state_bit0);
+    
+    // tarefa_concluida = 1 quando estado_atual == CONCLUIDO (10)
+    // Ou seja: state_bit1=1 AND state_bit0=0
+    and (tarefa_concluida, state_bit1, not_state_bit0);
+    
+    // decrementar_rolha = 1 quando estado_atual == VEDANDO (01) AND timer_igual_um
+    // timer_igual_um é gerado sequencialmente, mas combinamos com o estado usando portas
+    wire estado_vedando;
+    and (estado_vedando, not_state_bit1, state_bit0);
+    and (decrementar_rolha, estado_vedando, timer_igual_um);
 
 endmodule
 
