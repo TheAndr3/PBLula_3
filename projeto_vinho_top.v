@@ -194,6 +194,7 @@ module projeto_vinho_top (
     contador_duzias contador_duzias_inst (
         .clk(clk),
         .reset(reset),
+        .zera_contagem(pulso_start),     // FIX: Start zera contagem
         .incrementar(incrementar_duzia),
         .contador_valor(contador_duzias)
     );

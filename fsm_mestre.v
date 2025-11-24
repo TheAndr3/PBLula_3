@@ -58,7 +58,8 @@ module fsm_mestre (
     localparam MOVER_PARA_FINAL = 5'd17;
     localparam POSICIONAMENTO_FINAL = 5'd18;
     localparam CONTANDO_FINAL = 5'd19;
-    localparam PARADO_SEM_ROLHA = 5'd20;
+    localparam REINICIO_CICLO = 5'd20; // Novo estado para estabilidade
+    localparam PARADO_SEM_ROLHA = 5'd21;
     
     reg [4:0] estado_atual;
     reg [4:0] estado_anterior; // Para retomar após pausa sem rolha
@@ -67,6 +68,11 @@ module fsm_mestre (
     reg [25:0] timer;
     parameter TEMPO_DESCARTE = 26'd25000000; // 0.5s a 50MHz
     reg tempo_descarte_completo;
+    
+    // Timer para reinício de ciclo (1.0s) - Pausa visual entre garrafas
+    reg [25:0] timer_reinicio;
+    parameter TEMPO_REINICIO = 26'd50000000; // 1.0s
+    reg tempo_reinicio_completo;
     
     // Sincronização do sensor final para contagem
     reg sensor_final_prev;
@@ -92,8 +98,10 @@ module fsm_mestre (
             estado_anterior <= IDLE;
             timer <= 0;
             tempo_descarte_completo <= 1'b0;
+            timer_reinicio <= 0;
+            tempo_reinicio_completo <= 1'b0;
         end else begin
-            // Timer logic
+            // Timer Descarte
             if (estado_atual == ACAO_DESCARTE) begin
                 timer <= timer + 1;
                 if (timer >= TEMPO_DESCARTE) begin
@@ -102,6 +110,17 @@ module fsm_mestre (
             end else begin
                 timer <= 0;
                 tempo_descarte_completo <= 1'b0;
+            end
+            
+            // Timer Reinício
+            if (estado_atual == REINICIO_CICLO) begin
+                timer_reinicio <= timer_reinicio + 1;
+                if (timer_reinicio >= TEMPO_REINICIO) begin
+                    tempo_reinicio_completo <= 1'b1;
+                end
+            end else begin
+                timer_reinicio <= 0;
+                tempo_reinicio_completo <= 1'b0;
             end
             
             case (estado_atual)
@@ -118,7 +137,13 @@ module fsm_mestre (
                 
                 // --- Enchimento ---
                 MOVER_PARA_ENCHIMENTO: begin
-                    if (sensor_enchimento) estado_atual <= POSICIONAMENTO_ENCHIMENTO;
+                    // Verificação crítica: Não iniciar movimento se não há rolhas!
+                    if (alarme_rolha) begin
+                         estado_anterior <= MOVER_PARA_ENCHIMENTO;
+                         estado_atual <= PARADO_SEM_ROLHA;
+                    end else if (sensor_enchimento) begin
+                         estado_atual <= POSICIONAMENTO_ENCHIMENTO;
+                    end
                 end
                 
                 POSICIONAMENTO_ENCHIMENTO: begin
@@ -205,8 +230,8 @@ module fsm_mestre (
                 
                 ACAO_DESCARTE: begin
                     if (tempo_descarte_completo) begin
-                        // Após descarte, volta para início
-                        estado_atual <= MOVER_PARA_ENCHIMENTO;
+                        // Após descarte, volta para início via Reinicio
+                        estado_atual <= REINICIO_CICLO;
                     end
                 end
                 
@@ -220,10 +245,16 @@ module fsm_mestre (
                 end
                 
                 CONTANDO_FINAL: begin
-                    // Aguarda pulso do sensor final (garantir contagem)
-                    // Como já chegamos no sensor_final, o pulso já deve ter ocorrido ou está alto
-                    // Simplificação: conta e volta
-                    estado_atual <= MOVER_PARA_ENCHIMENTO;
+                    // Aguarda contagem
+                    estado_atual <= REINICIO_CICLO;
+                end
+                
+                // --- Reinício ---
+                REINICIO_CICLO: begin
+                    // Pausa visual para separar os ciclos
+                    if (tempo_reinicio_completo) begin
+                        estado_atual <= MOVER_PARA_ENCHIMENTO;
+                    end
                 end
                 
                 // --- Tratamento de Erro ---
@@ -243,7 +274,7 @@ module fsm_mestre (
     // LÓGICA MOORE: Saídas dependem APENAS do ESTADO (ESTRUTURAL - PORTAS)
     // ========================================================================
     // Decodificação One-Hot dos estados para facilitar lógica estrutural
-    // 5 bits de estado => 21 estados possíveis (0 a 20)
+    // 5 bits de estado => 22 estados possíveis (0 a 21)
     
     // Bits do estado
     wire s0, s1, s2, s3, s4;
@@ -343,12 +374,7 @@ module fsm_mestre (
     // descarte_ativo: Estado 16 (ACAO_DESCARTE)
     buf (descarte_ativo, st_acao_desc);
     
-    // incrementar_duzia: Estado 19 AND pulso_sensor_final
-    // Na verdade, apenas estar no estado 19 já pode ser usado se quisermos contar por ciclo
-    // Mas para ser preciso, usamos o estado. Como o estado é de um ciclo ou espera,
-    // vamos usar apenas o estado_cnt_final para ativar, pois o pulso pode ter passado.
-    // Porém, para evitar múltipla contagem se ficar parado, idealmente seria borda.
-    // Mas como a FSM sai do estado imediatamente (ver always block), podemos usar o estado.
+    // incrementar_duzia: Estado 19
     buf (incrementar_duzia, st_cnt_final);
 
 endmodule
