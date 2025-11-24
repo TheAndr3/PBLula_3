@@ -12,7 +12,7 @@ module projeto_vinho_top (
     // ========================================================================
     input wire CLOCK_50,                     // Clock de 50MHz
     input wire [1:0] KEY,                    // KEY[0]=START, KEY[1]=RESET
-    input wire [7:0] SW,                     // Chaves da placa
+    input wire [9:0] SW,                     // Chaves da placa (SW[5] e SW[6] agora usados)
     
     // ========================================================================
     // SAÍDAS DA PLACA DE10-LITE
@@ -32,6 +32,8 @@ module projeto_vinho_top (
     wire sensor_posicao_cq;                  // SW[2]
     wire resultado_cq;                       // SW[3] (0=Reprovado, 1=Aprovado)
     wire sensor_final;                       // SW[4]
+    wire sensor_vedacao;                     // SW[5] (NOVO)
+    wire sensor_descarte;                    // SW[6] (NOVO)
     wire sw_adicionar_rolha;                 // SW[7]
     
     buf (sensor_posicao_enchimento, SW[0]);
@@ -39,6 +41,8 @@ module projeto_vinho_top (
     buf (sensor_posicao_cq, SW[2]);
     buf (resultado_cq, SW[3]);
     buf (sensor_final, SW[4]);
+    buf (sensor_vedacao, SW[5]);
+    buf (sensor_descarte, SW[6]);
     buf (sw_adicionar_rolha, SW[7]);
     
     // ========================================================================
@@ -51,16 +55,16 @@ module projeto_vinho_top (
     wire valvula_ativa;                      // LEDR[8]
     wire motor_ativo;                        // LEDR[9]
     
-    // Constantes para LEDs não usados (usando supply0 diretamente)
-    supply0 gnd;  // Fonte de terra (0 lógico)
+    // Constantes para LEDs não usados
+    supply0 gnd;
     wire zero_const;
     buf (zero_const, gnd);
     
     buf (LEDR[0], alarme_rolha_vazia);
-    buf (LEDR[1], zero_const);               // Não usado
-    buf (LEDR[2], zero_const);               // Não usado
-    buf (LEDR[3], zero_const);               // Não usado
-    buf (LEDR[4], zero_const);               // Não usado
+    buf (LEDR[1], zero_const);
+    buf (LEDR[2], zero_const);
+    buf (LEDR[3], zero_const);
+    buf (LEDR[4], zero_const);
     buf (LEDR[5], dispensador_ativo);
     buf (LEDR[6], descarte_ativo);
     buf (LEDR[7], vedacao_ativa);
@@ -71,7 +75,6 @@ module projeto_vinho_top (
     // SINAIS INTERNOS (WIRES)
     // ========================================================================
     
-    // Sinais de reset e clock
     wire clk;
     wire reset;
     wire not_key1;
@@ -80,14 +83,9 @@ module projeto_vinho_top (
     not (not_key1, KEY[1]);                  // KEY[1] é ativo baixo
     buf (reset, not_key1);
     
-    // Sinais dos debouncers
     wire pulso_start;
-    wire pulso_reset;
     
-    // Sinais da FSM Mestre (COMANDOS DISTINTOS)
-    wire cmd_mover_para_enchimento;
-    wire cmd_mover_para_cq;
-    wire cmd_mover_para_final;
+    // Sinais da FSM Mestre
     wire cmd_encher;
     wire cmd_vedar;
     wire cmd_verificar_cq;
@@ -104,34 +102,11 @@ module projeto_vinho_top (
     wire [6:0] contador_rolhas;
     wire [6:0] contador_duzias;
     
-    // NOTA: A FSM Esteira será usada para todos os movimentos
-    // O sensor apropriado deve ser selecionado baseado no comando atual
-    // Vamos criar 3 instâncias separadas para maior clareza
-    
-    // Movimento 1: Até enchimento (sensor SW0)
-    wire motor_ativo_1;
-    wire esteira_concluida_enchimento;
-    
-    // Movimento 2: Até CQ (sensor SW2)
-    wire motor_ativo_2;
-    wire esteira_concluida_cq;
-    
-    // Movimento 3: Até final (sensor SW4)
-    wire motor_ativo_3;
-    wire esteira_concluida_final;
-    
-    // Combinar os motores (OR lógico - qualquer um ativo liga o motor)
-    wire motor_temp;
-    or (motor_temp, motor_ativo_1, motor_ativo_2);
-    or (motor_ativo, motor_temp, motor_ativo_3);
-    
     // ========================================================================
     // INSTANCIAÇÃO DOS MÓDULOS
     // ========================================================================
     
-    // ------------------------------------------------------------------------
     // 1. DEBOUNCER para START (KEY0)
-    // ------------------------------------------------------------------------
     debounce debounce_start (
         .clk(clk),
         .reset(reset),
@@ -139,79 +114,38 @@ module projeto_vinho_top (
         .pulse_out(pulso_start)
     );
     
-    // ------------------------------------------------------------------------
     // 2. FSM MESTRE (Sequenciador Principal)
-    // ------------------------------------------------------------------------
     fsm_mestre fsm_mestre_inst (
         .clk(clk),
         .reset(reset),
         .start(pulso_start),
         .alarme_rolha(alarme_rolha_vazia),
+        
+        // Sensores
+        .sensor_enchimento(sensor_posicao_enchimento),
+        .sensor_vedacao(sensor_vedacao),
+        .sensor_cq(sensor_posicao_cq),
+        .sensor_descarte(sensor_descarte),
         .sensor_final(sensor_final),
         
-        // Sinais das FSMs escravas (DISTINTOS)
-        .esteira_concluida_enchimento(esteira_concluida_enchimento),
-        .esteira_concluida_cq(esteira_concluida_cq),
-        .esteira_concluida_final(esteira_concluida_final),
+        // Inputs das FSMs escravas
         .enchimento_concluido(enchimento_concluido),
         .vedacao_concluida(vedacao_concluida),
         .cq_concluida(cq_concluida),
         .garrafa_aprovada(garrafa_aprovada),
         
-        // Comandos para FSMs escravas (DISTINTOS)
-        .cmd_mover_para_enchimento(cmd_mover_para_enchimento),
-        .cmd_mover_para_cq(cmd_mover_para_cq),
-        .cmd_mover_para_final(cmd_mover_para_final),
+        // Outputs Comandos
+        .motor_ativo(motor_ativo),      // Controle DIRETO do motor
         .cmd_encher(cmd_encher),
         .cmd_vedar(cmd_vedar),
         .cmd_verificar_cq(cmd_verificar_cq),
-        
-        // Sinal para contador de dúzias
+        .descarte_ativo(descarte_ativo), // Controle DIRETO do descarte
         .incrementar_duzia(incrementar_duzia)
     );
     
-    // ------------------------------------------------------------------------
-    // 3. FSM ESTEIRA - Movimento 1 (até enchimento)
-    // ------------------------------------------------------------------------
-    fsm_esteira fsm_esteira_1 (
-        .clk(clk),
-        .reset(reset),
-        .cmd_mover(cmd_mover_para_enchimento),
-        .sensor_destino(sensor_posicao_enchimento),
-        .alarme_rolha(alarme_rolha_vazia),
-        .motor_ativo(motor_ativo_1),
-        .tarefa_concluida(esteira_concluida_enchimento)
-    );
+    // 3. FSM ESTEIRA - REMOVIDA (Simplificação Arquitetural)
     
-    // ------------------------------------------------------------------------
-    // 4. FSM ESTEIRA - Movimento 2 (até CQ)
-    // ------------------------------------------------------------------------
-    fsm_esteira fsm_esteira_2 (
-        .clk(clk),
-        .reset(reset),
-        .cmd_mover(cmd_mover_para_cq),
-        .sensor_destino(sensor_posicao_cq),
-        .alarme_rolha(alarme_rolha_vazia),
-        .motor_ativo(motor_ativo_2),
-        .tarefa_concluida(esteira_concluida_cq)
-    );
-    
-    // ------------------------------------------------------------------------
-    // 5. FSM ESTEIRA - Movimento 3 (até final)
-    // ------------------------------------------------------------------------
-    fsm_esteira fsm_esteira_3 (
-        .clk(clk),
-        .reset(reset),
-        .cmd_mover(cmd_mover_para_final),
-        .sensor_destino(sensor_final),
-        .alarme_rolha(alarme_rolha_vazia),
-        .motor_ativo(motor_ativo_3),
-        .tarefa_concluida(esteira_concluida_final)
-    );
-    
-    // ------------------------------------------------------------------------
-    // 6. FSM ENCHIMENTO
-    // ------------------------------------------------------------------------
+    // 4. FSM ENCHIMENTO
     fsm_enchimento fsm_enchimento_inst (
         .clk(clk),
         .reset(reset),
@@ -221,9 +155,7 @@ module projeto_vinho_top (
         .tarefa_concluida(enchimento_concluido)
     );
     
-    // ------------------------------------------------------------------------
-    // 7. FSM VEDAÇÃO
-    // ------------------------------------------------------------------------
+    // 5. FSM VEDAÇÃO
     fsm_vedacao fsm_vedacao_inst (
         .clk(clk),
         .reset(reset),
@@ -234,9 +166,7 @@ module projeto_vinho_top (
         .tarefa_concluida(vedacao_concluida)
     );
     
-    // ------------------------------------------------------------------------
-    // 8. FSM CONTROLE DE QUALIDADE E DESCARTE
-    // ------------------------------------------------------------------------
+    // 6. FSM CONTROLE DE QUALIDADE
     fsm_cq_descarte fsm_cq_inst (
         .clk(clk),
         .reset(reset),
@@ -244,14 +174,12 @@ module projeto_vinho_top (
         .sensor_cq(sensor_posicao_cq),
         .pulso_start(pulso_start),
         .resultado_cq(resultado_cq),
-        .descarte_ativo(descarte_ativo),
+        //.descarte_ativo(descarte_ativo), // Agora controlado pelo Mestre
         .garrafa_aprovada(garrafa_aprovada),
         .tarefa_concluida(cq_concluida)
     );
     
-    // ------------------------------------------------------------------------
-    // 9. CONTADOR DE ROLHAS
-    // ------------------------------------------------------------------------
+    // 7. CONTADOR DE ROLHAS
     contador_rolhas contador_rolhas_inst (
         .clk(clk),
         .reset(reset),
@@ -262,9 +190,7 @@ module projeto_vinho_top (
         .contador_valor(contador_rolhas)
     );
     
-    // ------------------------------------------------------------------------
-    // 10. CONTADOR DE DÚZIAS
-    // ------------------------------------------------------------------------
+    // 8. CONTADOR DE DÚZIAS
     contador_duzias contador_duzias_inst (
         .clk(clk),
         .reset(reset),
@@ -272,18 +198,14 @@ module projeto_vinho_top (
         .contador_valor(contador_duzias)
     );
     
-    // ------------------------------------------------------------------------
-    // 11. DECODIFICADOR DISPLAY - ROLHAS (HEX1-HEX0)
-    // ------------------------------------------------------------------------
+    // 9. DECODIFICADOR DISPLAY - ROLHAS
     decodificador_display dec_rolhas (
         .valor(contador_rolhas),
         .hex1(HEX1),
         .hex0(HEX0)
     );
     
-    // ------------------------------------------------------------------------
-    // 12. DECODIFICADOR DISPLAY - DÚZIAS (HEX3-HEX2)
-    // ------------------------------------------------------------------------
+    // 10. DECODIFICADOR DISPLAY - DÚZIAS
     decodificador_display dec_duzias (
         .valor(contador_duzias),
         .hex1(HEX3),
@@ -291,4 +213,3 @@ module projeto_vinho_top (
     );
 
 endmodule
-
