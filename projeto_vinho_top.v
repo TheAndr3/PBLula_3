@@ -217,9 +217,14 @@ module projeto_vinho_top (
     // 10. CONTADOR DE DÚZIAS
     // ------------------------------------------------------------------------
 	 buf (incrementar_garrafa, garrafa_aprovada);
+	 
+	 // Lógica de Reset combinada: Global (KEY1) OU Start (KEY0)
+	 wire reset_duzias;
+	 or (reset_duzias, reset, pulso_start);
+	 
     contador_duzias_v2 contador_duzias_inst (
         .clk(clk),
-        .reset(reset),
+        .reset(reset_duzias),
         .incrementar(incrementar_garrafa),
         .contador_valor(contador_duzias)
     );
