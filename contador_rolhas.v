@@ -19,12 +19,15 @@ module contador_rolhas (
     parameter MAX_ROLHAS = 7'd99;
     parameter LIMITE_REPOSICAO = 7'd5;   // Repõe quando atingir 5
     parameter QTD_REPOSICAO = 7'd15;     // Adiciona 15 rolhas
+	 
     
     // Estados da lógica de reposição automática
     localparam IDLE = 2'd0;
     localparam DISPENSANDO = 2'd1;
     localparam AGUARDANDO = 2'd2;
     
+	 // O estoque só tem 15 rolhas, ou seja, a reposição só ocorre uma vez
+	 reg estoque;
     reg [1:0] estado_dispensador;
     reg [25:0] timer_dispensador;        // Timer para simulação do dispensador
     reg adicionar_rolhas_dispensador;    // Sinal interno para adicionar rolhas
@@ -63,6 +66,7 @@ module contador_rolhas (
             dispensador_ativo <= 1'b0;
             timer_dispensador <= 0;
             adicionar_rolhas_dispensador <= 1'b0;
+				estoque <= 1'b1;
         end else begin
             // ================================================================
             // PARTE 1: Máquina de estados do dispensador
@@ -86,11 +90,12 @@ module contador_rolhas (
                     adicionar_rolhas_dispensador <= 1'b0;
                     
                     // Simula o tempo de dispensação (1 segundo)
-                    if (timer_dispensador >= TEMPO_DISPENSADOR) begin
+                    if (timer_dispensador >= TEMPO_DISPENSADOR && estoque) begin
                         adicionar_rolhas_dispensador <= 1'b1;  // Sinaliza para adicionar
                         estado_dispensador <= AGUARDANDO;
                         dispensador_ativo <= 1'b0;
                         timer_dispensador <= 0;
+								estoque <= 1'b0;
                     end
                 end
                 
@@ -110,6 +115,7 @@ module contador_rolhas (
                     estado_dispensador <= IDLE;
                     dispensador_ativo <= 1'b0;
                     adicionar_rolhas_dispensador <= 1'b0;
+						  estoque <= 1'b1;
                 end
             endcase
             

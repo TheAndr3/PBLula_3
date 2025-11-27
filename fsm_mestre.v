@@ -1,8 +1,8 @@
 // ============================================================================
 // Módulo: fsm_mestre.v
 // Descrição: FSM MOORE - Sequenciador Principal (Mestre)
-//            Coordena todas as FSMs escravas e controla o motor da esteira
-//            Implementa ~20 estados para controle granular do processo
+//            Coordena todas as FSMs escravas
+//            Envia comandos e aguarda sinais de tarefa_concluida
 // Tipo: Verilog COMPORTAMENTAL (FSM MOORE)
 // ============================================================================
 
@@ -11,73 +11,54 @@ module fsm_mestre (
     input wire reset,                        // Reset global
     input wire start,                        // Pulso do botão START (KEY0)
     input wire alarme_rolha,                 // Alarme de falta de rolha
+    input wire sensor_final,                 // SW4 - Sensor final da esteira
     
-    // Sensores de Posição
-    input wire sensor_enchimento,            // SW[0]
-    input wire sensor_vedacao,               // SW[5] (Novo)
-    input wire sensor_cq,                    // SW[2]
-    input wire sensor_descarte,              // SW[6] (Novo)
-    input wire sensor_final,                 // SW[4]
-    
-    // Sinais das FSMs escravas
+    // Sinais das FSMs escravas (DISTINTOS)
+    input wire esteira_concluida_enchimento, // Esteira 1 (Enchimento) concluída
+    input wire esteira_concluida_cq,         // Esteira 2 (CQ) concluída
+    input wire esteira_concluida_final,      // Esteira 3 (Final) concluída
     input wire enchimento_concluido,         // Enchimento finalizado
     input wire vedacao_concluida,            // Vedação finalizada
     input wire cq_concluida,                 // Controle de qualidade finalizado
     input wire garrafa_aprovada,             // Garrafa foi aprovada no CQ
     
-    // Comandos para FSMs escravas e Atuadores
-    output wire motor_ativo,                 // LEDR[9] - Controle direto do motor
-    output wire cmd_encher,                  // Comando para encher
-    output wire cmd_vedar,                   // Comando para vedar
-    output wire cmd_verificar_cq,            // Comando para verificar CQ
-    output wire descarte_ativo,              // LEDR[6] - Ação de descarte (controlado pelo Mestre)
+    // Comandos para FSMs escravas (DISTINTOS)
+    output wire cmd_mover_para_enchimento,    // Comando para FSM Esteira 1
+    output wire cmd_mover_para_cq,            // Comando para FSM Esteira 2
+    output wire cmd_mover_para_final,         // Comando para FSM Esteira 3
+    output wire cmd_encher,                   // Comando para encher
+    output wire cmd_vedar,                    // Comando para vedar
+    output wire cmd_verificar_cq,             // Comando para verificar CQ
     
     // Sinal para contador de dúzias
-    output wire incrementar_duzia            // Incrementa contador ao final
+    output wire incrementar_duzia             // Incrementa contador ao final
 );
 
-    // Estados da FSM Mestre (Codificação One-Hot Simplificada ou Binária)
-    // Usando 5 bits para cobrir > 16 estados
-    localparam IDLE = 5'd0;
-    localparam MOVER_PARA_ENCHIMENTO = 5'd1;
-    localparam POSICIONAMENTO_ENCHIMENTO = 5'd2;
-    localparam COMANDO_ENCHIMENTO = 5'd3;
-    localparam AGUARDA_ENCHIMENTO = 5'd4;
-    localparam MOVER_PARA_VEDACAO = 5'd5;
-    localparam POSICIONAMENTO_VEDACAO = 5'd6;
-    localparam COMANDO_VEDACAO = 5'd7;
-    localparam AGUARDA_VEDACAO = 5'd8;
-    localparam VERIFICAR_ROLHAS = 5'd9;
-    localparam MOVER_PARA_CQ = 5'd10;
-    localparam POSICIONAMENTO_CQ = 5'd11;
-    localparam COMANDO_CQ = 5'd12;
-    localparam AGUARDA_CQ = 5'd13;
-    localparam DECISAO_CQ = 5'd14;
-    localparam MOVER_PARA_DESCARTE = 5'd15;
-    localparam ACAO_DESCARTE = 5'd16;
-    localparam MOVER_PARA_FINAL = 5'd17;
-    localparam POSICIONAMENTO_FINAL = 5'd18;
-    localparam CONTANDO_FINAL = 5'd19;
-    localparam REINICIO_CICLO = 5'd20; // Novo estado para estabilidade
-    localparam PARADO_SEM_ROLHA = 5'd21;
+    // Estados da FSM Mestre
+    localparam IDLE = 4'd0;
+    localparam MOVER_PARA_ENCHIMENTO = 4'd1;
+    localparam AGUARDA_ESTEIRA_1 = 4'd2;
+    localparam ENCHENDO = 4'd3;
+    localparam AGUARDA_ENCHIMENTO = 4'd4;
+    localparam VEDANDO = 4'd5;
+    localparam AGUARDA_VEDACAO = 4'd6;
+    localparam MOVER_PARA_CQ = 4'd7;
+    localparam AGUARDA_ESTEIRA_2 = 4'd8;
+    localparam VERIFICANDO_CQ = 4'd9;
+    localparam AGUARDA_CQ = 4'd10;
+    localparam MOVER_PARA_FINAL = 4'd11;
+    localparam AGUARDA_ESTEIRA_3 = 4'd12;
+    localparam CONTANDO_FINAL = 4'd13;
+    localparam PARADO_SEM_ROLHA = 4'd14;
     
-    reg [4:0] estado_atual;
-    reg [4:0] estado_anterior; // Para retomar após pausa sem rolha
+    reg [3:0] estado_atual;
     
-    // Timer para ação de descarte (0.5s)
-    reg [25:0] timer;
-    parameter TEMPO_DESCARTE = 26'd25000000; // 0.5s a 50MHz
-    reg tempo_descarte_completo;
-    
-    // Timer para reinício de ciclo (1.0s) - Pausa visual entre garrafas
-    reg [25:0] timer_reinicio;
-    parameter TEMPO_REINICIO = 26'd50000000; // 1.0s
-    reg tempo_reinicio_completo;
-    
-    // Sincronização do sensor final para contagem
+    // Sincronização do sensor final
     reg sensor_final_prev;
     wire pulso_sensor_final;
     wire not_sensor_final_prev;
+    
+    // Detecta borda de subida usando portas lógicas
     not (not_sensor_final_prev, sensor_final_prev);
     and (pulso_sensor_final, sensor_final, not_sensor_final_prev);
     
@@ -95,177 +76,152 @@ module fsm_mestre (
     always @(posedge clk or posedge reset) begin
         if (reset) begin
             estado_atual <= IDLE;
-            estado_anterior <= IDLE;
-            timer <= 0;
-            tempo_descarte_completo <= 1'b0;
-            timer_reinicio <= 0;
-            tempo_reinicio_completo <= 1'b0;
         end else begin
-            // Timer Descarte
-            if (estado_atual == ACAO_DESCARTE) begin
-                timer <= timer + 1;
-                if (timer >= TEMPO_DESCARTE) begin
-                    tempo_descarte_completo <= 1'b1;
-                end
-            end else begin
-                timer <= 0;
-                tempo_descarte_completo <= 1'b0;
-            end
-            
-            // Timer Reinício
-            if (estado_atual == REINICIO_CICLO) begin
-                timer_reinicio <= timer_reinicio + 1;
-                if (timer_reinicio >= TEMPO_REINICIO) begin
-                    tempo_reinicio_completo <= 1'b1;
-                end
-            end else begin
-                timer_reinicio <= 0;
-                tempo_reinicio_completo <= 1'b0;
-            end
-            
             case (estado_atual)
+                // ============================================================
+                // Estado IDLE - Aguarda comando START
+                // ============================================================
                 IDLE: begin
                     if (start) begin
                         if (alarme_rolha) begin
-                            estado_anterior <= MOVER_PARA_ENCHIMENTO; // Tentativa inicial
+                            // Se não há rolhas, não inicia o processo
                             estado_atual <= PARADO_SEM_ROLHA;
                         end else begin
+                            // Inicia o processo
                             estado_atual <= MOVER_PARA_ENCHIMENTO;
                         end
                     end
                 end
                 
-                // --- Enchimento ---
-                MOVER_PARA_ENCHIMENTO: begin
-                    // Verificação crítica: Não iniciar movimento se não há rolhas!
-                    if (alarme_rolha) begin
-                         estado_anterior <= MOVER_PARA_ENCHIMENTO;
-                         estado_atual <= PARADO_SEM_ROLHA;
-                    end else if (sensor_enchimento) begin
-                         estado_atual <= POSICIONAMENTO_ENCHIMENTO;
+                // ============================================================
+                // Estado PARADO_SEM_ROLHA - Sistema parado por falta de rolhas
+                // ============================================================
+                PARADO_SEM_ROLHA: begin
+                    if (!alarme_rolha) begin
+                        // Rolhas foram repostas, pode continuar
+                        estado_atual <= IDLE;
                     end
                 end
                 
-                POSICIONAMENTO_ENCHIMENTO: begin
-                    // Pequeno delay ou verificação extra poderia ser aqui
-                    estado_atual <= COMANDO_ENCHIMENTO;
+                // ============================================================
+                // FASE 1: Movimento até o ponto de enchimento
+                // ============================================================
+                MOVER_PARA_ENCHIMENTO: begin
+                    // Aguarda 1 ciclo para enviar comando
+                    estado_atual <= AGUARDA_ESTEIRA_1;
                 end
                 
-                COMANDO_ENCHIMENTO: begin
+                AGUARDA_ESTEIRA_1: begin
+                    if (esteira_concluida_enchimento) begin
+                        // Esteira parou no sensor de enchimento
+                        estado_atual <= ENCHENDO;
+                    end
+                    // Se ficar sem rolha durante movimento
+                    if (alarme_rolha) begin
+                        estado_atual <= PARADO_SEM_ROLHA;
+                    end
+                end
+                
+                // ============================================================
+                // FASE 2: Enchimento da garrafa
+                // ============================================================
+                ENCHENDO: begin
                     estado_atual <= AGUARDA_ENCHIMENTO;
                 end
                 
                 AGUARDA_ENCHIMENTO: begin
                     if (enchimento_concluido) begin
-                        estado_atual <= MOVER_PARA_VEDACAO;
+                        // Enchimento finalizado
+                        estado_atual <= VEDANDO;
                     end
                 end
                 
-                // --- Vedação ---
-                MOVER_PARA_VEDACAO: begin
-                    // Verifica rolha antes/durante movimento
-                    if (alarme_rolha) begin
-                        estado_anterior <= MOVER_PARA_VEDACAO;
-                        estado_atual <= PARADO_SEM_ROLHA;
-                    end else if (sensor_vedacao) begin
-                        estado_atual <= POSICIONAMENTO_VEDACAO;
-                    end
-                end
-                
-                POSICIONAMENTO_VEDACAO: begin
-                    estado_atual <= COMANDO_VEDACAO;
-                end
-                
-                COMANDO_VEDACAO: begin
+                // ============================================================
+                // FASE 3: Vedação da garrafa
+                // ============================================================
+                VEDANDO: begin
                     estado_atual <= AGUARDA_VEDACAO;
                 end
                 
                 AGUARDA_VEDACAO: begin
                     if (vedacao_concluida) begin
-                        estado_atual <= VERIFICAR_ROLHAS;
-                    end
-                end
-                
-                VERIFICAR_ROLHAS: begin
-                    // Pós-vedação check
-                    if (alarme_rolha) begin
-                        estado_anterior <= MOVER_PARA_CQ;
-                        estado_atual <= PARADO_SEM_ROLHA;
-                    end else begin
+                        // Vedação finalizada
                         estado_atual <= MOVER_PARA_CQ;
                     end
+                    // Se ficar sem rolha durante vedação
+                    if (alarme_rolha) begin
+                        estado_atual <= PARADO_SEM_ROLHA;
+                    end
                 end
                 
-                // --- CQ ---
+                // ============================================================
+                // FASE 4: Movimento até o controle de qualidade
+                // ============================================================
                 MOVER_PARA_CQ: begin
-                    if (sensor_cq) estado_atual <= POSICIONAMENTO_CQ;
+                    estado_atual <= AGUARDA_ESTEIRA_2;
                 end
                 
-                POSICIONAMENTO_CQ: begin
-                    estado_atual <= COMANDO_CQ;
+                AGUARDA_ESTEIRA_2: begin
+                    if (esteira_concluida_cq) begin
+                        // Esteira parou no sensor CQ
+                        estado_atual <= VERIFICANDO_CQ;
+                    end
+                    if (alarme_rolha) begin
+                        estado_atual <= PARADO_SEM_ROLHA;
+                    end
                 end
                 
-                COMANDO_CQ: begin
+                // ============================================================
+                // FASE 5: Controle de qualidade
+                // ============================================================
+                VERIFICANDO_CQ: begin
                     estado_atual <= AGUARDA_CQ;
                 end
                 
                 AGUARDA_CQ: begin
                     if (cq_concluida) begin
-                        estado_atual <= DECISAO_CQ;
+                        // CQ finalizado (aprovado ou descartado)
+                        if (garrafa_aprovada) begin
+                            // Garrafa aprovada, segue para final
+                            estado_atual <= MOVER_PARA_FINAL;
+                        end else begin
+                            // Garrafa reprovada, volta ao início
+                            estado_atual <= MOVER_PARA_ENCHIMENTO;
+                        end
                     end
                 end
                 
-                DECISAO_CQ: begin
-                    if (garrafa_aprovada) begin
-                        estado_atual <= MOVER_PARA_FINAL;
-                    end else begin
-                        estado_atual <= MOVER_PARA_DESCARTE;
-                    end
-                end
-                
-                // --- Descarte ---
-                MOVER_PARA_DESCARTE: begin
-                    if (sensor_descarte) estado_atual <= ACAO_DESCARTE;
-                end
-                
-                ACAO_DESCARTE: begin
-                    if (tempo_descarte_completo) begin
-                        // Após descarte, volta para início via Reinicio
-                        estado_atual <= REINICIO_CICLO;
-                    end
-                end
-                
-                // --- Final ---
+                // ============================================================
+                // FASE 6: Movimento até o sensor final
+                // ============================================================
                 MOVER_PARA_FINAL: begin
-                    if (sensor_final) estado_atual <= POSICIONAMENTO_FINAL;
+                    estado_atual <= AGUARDA_ESTEIRA_3;
                 end
                 
-                POSICIONAMENTO_FINAL: begin
-                    estado_atual <= CONTANDO_FINAL;
+                AGUARDA_ESTEIRA_3: begin
+                    if (esteira_concluida_final) begin
+                        // Esteira parou no sensor final
+                        estado_atual <= CONTANDO_FINAL;
+                    end
+                    if (alarme_rolha) begin
+                        estado_atual <= PARADO_SEM_ROLHA;
+                    end
                 end
                 
+                // ============================================================
+                // FASE 7: Contagem final (incrementa dúzias)
+                // ============================================================
                 CONTANDO_FINAL: begin
-                    // Aguarda contagem
-                    estado_atual <= REINICIO_CICLO;
-                end
-                
-                // --- Reinício ---
-                REINICIO_CICLO: begin
-                    // Pausa visual para separar os ciclos
-                    if (tempo_reinicio_completo) begin
+                    // Aguarda o sensor final detectar a garrafa
+                    if (pulso_sensor_final) begin
+                        // Garrafa contada, volta ao início para próxima
                         estado_atual <= MOVER_PARA_ENCHIMENTO;
                     end
                 end
                 
-                // --- Tratamento de Erro ---
-                PARADO_SEM_ROLHA: begin
-                    if (!alarme_rolha) begin
-                        // Retoma de onde parou
-                        estado_atual <= estado_anterior;
-                    end
+                default: begin
+                    estado_atual <= IDLE;
                 end
-                
-                default: estado_atual <= IDLE;
             endcase
         end
     end
@@ -273,108 +229,106 @@ module fsm_mestre (
     // ========================================================================
     // LÓGICA MOORE: Saídas dependem APENAS do ESTADO (ESTRUTURAL - PORTAS)
     // ========================================================================
-    // Decodificação One-Hot dos estados para facilitar lógica estrutural
-    // 5 bits de estado => 22 estados possíveis (0 a 21)
+    // Extração dos bits do estado (4 bits: estado_atual[3:0])
+    wire state_bit0, state_bit1, state_bit2, state_bit3;
+    buf (state_bit0, estado_atual[0]);
+    buf (state_bit1, estado_atual[1]);
+    buf (state_bit2, estado_atual[2]);
+    buf (state_bit3, estado_atual[3]);
     
-    // Bits do estado
-    wire s0, s1, s2, s3, s4;
-    buf (s0, estado_atual[0]);
-    buf (s1, estado_atual[1]);
-    buf (s2, estado_atual[2]);
-    buf (s3, estado_atual[3]);
-    buf (s4, estado_atual[4]);
+    // Sinais intermediários para detecção de estados
+    // Estado 1 (MOVER_PARA_ENCHIMENTO): 0001
+    wire estado_1;
+    wire not_s0, not_s1, not_s2, not_s3;
+    not (not_s0, state_bit0);
+    not (not_s1, state_bit1);
+    not (not_s2, state_bit2);
+    not (not_s3, state_bit3);
+    and (estado_1, not_s3, not_s2, not_s1, state_bit0);
     
-    // Inversão dos bits
-    wire ns0, ns1, ns2, ns3, ns4;
-    not (ns0, s0);
-    not (ns1, s1);
-    not (ns2, s2);
-    not (ns3, s3);
-    not (ns4, s4);
+    // Estado 2 (AGUARDA_ESTEIRA_1): 0010
+    wire estado_2;
+    and (estado_2, not_s3, not_s2, state_bit1, not_s0);
     
-    // Decodificação dos Estados Relevantes para Saídas
+    // Estado 3 (ENCHENDO): 0011
+    wire estado_3;
+    and (estado_3, not_s3, not_s2, state_bit1, state_bit0);
     
-    // MOVER_PARA_ENCHIMENTO (1 = 00001)
-    wire st_mover_ench;
-    and (st_mover_ench, ns4, ns3, ns2, ns1, s0);
+    // Estado 4 (AGUARDA_ENCHIMENTO): 0100
+    wire estado_4;
+    and (estado_4, not_s3, state_bit2, not_s1, not_s0);
     
-    // COMANDO_ENCHIMENTO (3 = 00011)
-    wire st_cmd_ench;
-    and (st_cmd_ench, ns4, ns3, ns2, s1, s0);
+    // Estado 5 (VEDANDO): 0101
+    wire estado_5;
+    and (estado_5, not_s3, state_bit2, not_s1, state_bit0);
     
-    // AGUARDA_ENCHIMENTO (4 = 00100)
-    wire st_wait_ench;
-    and (st_wait_ench, ns4, ns3, s2, ns1, ns0);
+    // Estado 6 (AGUARDA_VEDACAO): 0110
+    wire estado_6;
+    and (estado_6, not_s3, state_bit2, state_bit1, not_s0);
     
-    // MOVER_PARA_VEDACAO (5 = 00101)
-    wire st_mover_ved;
-    and (st_mover_ved, ns4, ns3, s2, ns1, s0);
+    // Estado 7 (MOVER_PARA_CQ): 0111
+    wire estado_7;
+    and (estado_7, not_s3, state_bit2, state_bit1, state_bit0);
     
-    // COMANDO_VEDACAO (7 = 00111)
-    wire st_cmd_ved;
-    and (st_cmd_ved, ns4, ns3, s2, s1, s0);
+    // Estado 8 (AGUARDA_ESTEIRA_2): 1000
+    wire estado_8;
+    and (estado_8, state_bit3, not_s2, not_s1, not_s0);
     
-    // AGUARDA_VEDACAO (8 = 01000)
-    wire st_wait_ved;
-    and (st_wait_ved, ns4, s3, ns2, ns1, ns0);
+    // Estado 9 (VERIFICANDO_CQ): 1001
+    wire estado_9;
+    and (estado_9, state_bit3, not_s2, not_s1, state_bit0);
     
-    // MOVER_PARA_CQ (10 = 01010)
-    wire st_mover_cq;
-    and (st_mover_cq, ns4, s3, ns2, s1, ns0);
+    // Estado 10 (AGUARDA_CQ): 1010
+    wire estado_10;
+    and (estado_10, state_bit3, not_s2, state_bit1, not_s0);
     
-    // COMANDO_CQ (12 = 01100)
-    wire st_cmd_cq;
-    and (st_cmd_cq, ns4, s3, s2, ns1, ns0);
+    // Estado 11 (MOVER_PARA_FINAL): 1011
+    wire estado_11;
+    and (estado_11, state_bit3, not_s2, state_bit1, state_bit0);
     
-    // AGUARDA_CQ (13 = 01101)
-    wire st_wait_cq;
-    and (st_wait_cq, ns4, s3, s2, ns1, s0);
+    // Estado 12 (AGUARDA_ESTEIRA_3): 1100
+    wire estado_12;
+    and (estado_12, state_bit3, state_bit2, not_s1, not_s0);
     
-    // MOVER_PARA_DESCARTE (15 = 01111)
-    wire st_mover_desc;
-    and (st_mover_desc, ns4, s3, s2, s1, s0);
+    // Estado 13 (CONTANDO_FINAL): 1101
+    wire estado_13;
+    and (estado_13, state_bit3, state_bit2, not_s1, state_bit0);
     
-    // ACAO_DESCARTE (16 = 10000)
-    wire st_acao_desc;
-    and (st_acao_desc, s4, ns3, ns2, ns1, ns0);
+    // Saídas usando portas OR para combinar estados
+    // cmd_mover_para_enchimento: estados 1 ou 2
+    wire cmd_mover_ench_temp;
+    or (cmd_mover_ench_temp, estado_1, estado_2);
+    buf (cmd_mover_para_enchimento, cmd_mover_ench_temp);
     
-    // MOVER_PARA_FINAL (17 = 10001)
-    wire st_mover_final;
-    and (st_mover_final, s4, ns3, ns2, ns1, s0);
+    // cmd_encher: estados 3 ou 4
+    wire cmd_encher_temp;
+    or (cmd_encher_temp, estado_3, estado_4);
+    buf (cmd_encher, cmd_encher_temp);
     
-    // CONTANDO_FINAL (19 = 10011)
-    wire st_cnt_final;
-    and (st_cnt_final, s4, ns3, ns2, s1, s0);
+    // cmd_vedar: estados 5 ou 6
+    wire cmd_vedar_temp;
+    or (cmd_vedar_temp, estado_5, estado_6);
+    buf (cmd_vedar, cmd_vedar_temp);
     
-    // --- Definição das Saídas ---
+    // cmd_mover_para_cq: estados 7 ou 8
+    wire cmd_mover_cq_temp;
+    or (cmd_mover_cq_temp, estado_7, estado_8);
+    buf (cmd_mover_para_cq, cmd_mover_cq_temp);
     
-    // motor_ativo: Liga nos estados de movimento (1, 5, 10, 15, 17)
-    wire motor_tmp1, motor_tmp2, motor_tmp3, motor_out;
-    or (motor_tmp1, st_mover_ench, st_mover_ved);
-    or (motor_tmp2, st_mover_cq, st_mover_desc);
-    or (motor_tmp3, motor_tmp1, motor_tmp2);
-    or (motor_out, motor_tmp3, st_mover_final);
-    buf (motor_ativo, motor_out);
+    // cmd_verificar_cq: estados 9 ou 10
+    wire cmd_verificar_cq_temp;
+    or (cmd_verificar_cq_temp, estado_9, estado_10);
+    buf (cmd_verificar_cq, cmd_verificar_cq_temp);
     
-    // cmd_encher: Estados 3 ou 4 (Comando + Espera)
-    wire cmd_ench_out;
-    or (cmd_ench_out, st_cmd_ench, st_wait_ench);
-    buf (cmd_encher, cmd_ench_out);
+    // cmd_mover_para_final: estados 11 ou 12
+    wire cmd_mover_final_temp;
+    or (cmd_mover_final_temp, estado_11, estado_12);
+    buf (cmd_mover_para_final, cmd_mover_final_temp);
     
-    // cmd_vedar: Estados 7 ou 8
-    wire cmd_ved_out;
-    or (cmd_ved_out, st_cmd_ved, st_wait_ved);
-    buf (cmd_vedar, cmd_ved_out);
-    
-    // cmd_verificar_cq: Estados 12 ou 13
-    wire cmd_cq_out;
-    or (cmd_cq_out, st_cmd_cq, st_wait_cq);
-    buf (cmd_verificar_cq, cmd_cq_out);
-    
-    // descarte_ativo: Estado 16 (ACAO_DESCARTE)
-    buf (descarte_ativo, st_acao_desc);
-    
-    // incrementar_duzia: Estado 19
-    buf (incrementar_duzia, st_cnt_final);
+    // incrementar_duzia: estado 13 AND pulso_sensor_final
+    wire incrementar_duzia_temp;
+    and (incrementar_duzia_temp, estado_13, pulso_sensor_final);
+    buf (incrementar_duzia, incrementar_duzia_temp);
 
 endmodule
+

@@ -11,6 +11,7 @@ module fsm_vedacao (
     input wire reset,                    // Reset global
     input wire cmd_iniciar,              // Comando do mestre para iniciar vedação
     input wire alarme_rolha,             // Alarme de falta de rolha
+	 input wire cq_concluido,
     output wire vedacao_ativa,           // LEDR[7] - Atuador de vedação
     output wire decrementar_rolha,       // Sinal para decrementar contador
     output wire tarefa_concluida         // Sinal de volta para o mestre
@@ -73,7 +74,7 @@ module fsm_vedacao (
                 CONCLUIDO: begin
                     timer <= 0;
                     // Aguarda o comando ser desligado para voltar ao IDLE
-                    if (!cmd_iniciar) begin
+                    if (!cmd_iniciar && cq_concluido) begin
                         estado_atual <= IDLE;
                     end
                 end

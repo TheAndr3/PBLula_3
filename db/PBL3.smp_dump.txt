@@ -1,0 +1,6 @@
+
+State Machine - |projeto_vinho_top|contador_rolhas:contador_rolhas_inst|estado_dispensador
+Name estado_dispensador.IDLE estado_dispensador.AGUARDANDO estado_dispensador.DISPENSANDO 
+estado_dispensador.IDLE 0 0 0 
+estado_dispensador.DISPENSANDO 1 0 1 
+estado_dispensador.AGUARDANDO 1 1 0 

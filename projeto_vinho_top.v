@@ -12,7 +12,7 @@ module projeto_vinho_top (
     // ========================================================================
     input wire CLOCK_50,                     // Clock de 50MHz
     input wire [1:0] KEY,                    // KEY[0]=START, KEY[1]=RESET
-    input wire [9:0] SW,                     // Chaves da placa (SW[5] e SW[6] agora usados)
+    input wire [7:0] SW,                     // Chaves da placa
     
     // ========================================================================
     // SAÍDAS DA PLACA DE10-LITE
@@ -29,21 +29,24 @@ module projeto_vinho_top (
     // ========================================================================
     wire sensor_posicao_enchimento;          // SW[0]
     wire sensor_nivel;                       // SW[1]
-    wire sensor_posicao_cq;                  // SW[2]
-    wire resultado_cq;                       // SW[3] (0=Reprovado, 1=Aprovado)
-    wire sensor_final;                       // SW[4]
-    wire sensor_vedacao;                     // SW[5] (NOVO)
-    wire sensor_descarte;                    // SW[6] (NOVO)
+    wire aprovado_cq;                        // SW[2]  Aprovado
+    wire reprovado_cq;                       // SW[3] (Reprovado)
+    wire sensor_posicao_cq;                   // SW[4]		
     wire sw_adicionar_rolha;                 // SW[7]
+	 wire iniciar;
     
     buf (sensor_posicao_enchimento, SW[0]);
     buf (sensor_nivel, SW[1]);
-    buf (sensor_posicao_cq, SW[2]);
-    buf (resultado_cq, SW[3]);
-    buf (sensor_final, SW[4]);
-    buf (sensor_vedacao, SW[5]);
-    buf (sensor_descarte, SW[6]);
-    buf (sw_adicionar_rolha, SW[7]);
+    buf (aprovado_cq, SW[2]);
+    buf (reprovado_cq, SW[3]);
+	 debounce debounce_add_rolha (
+        .clk(clk),
+        .reset(reset),
+        .button_in(SW[7]),
+        .pulse_out(sw_adicionar_rolha)
+    );
+	 
+	 not (iniciar, KEY[0]);
     
     // ========================================================================
     // MAPEAMENTO DE SAÍDAS (Atuadores) - ESTRUTURAL
@@ -55,18 +58,18 @@ module projeto_vinho_top (
     wire valvula_ativa;                      // LEDR[8]
     wire motor_ativo;                        // LEDR[9]
     
-    // Constantes para LEDs não usados
-    supply0 gnd;
+    // Constantes para LEDs não usados (usando supply0 diretamente)
+    supply0 gnd;  // Fonte de terra (0 lógico)
     wire zero_const;
     buf (zero_const, gnd);
     
     buf (LEDR[0], alarme_rolha_vazia);
-    buf (LEDR[1], zero_const);
-    buf (LEDR[2], zero_const);
-    buf (LEDR[3], zero_const);
-    buf (LEDR[4], zero_const);
+    //buf (LEDR[1], zero_const);               // Não usado
+    //buf (LEDR[2], zero_const);               // Não usado
+    buf (LEDR[3], zero_const);               // Não usado
+    and (LEDR[4], posicao_cq);               // Não usado
     buf (LEDR[5], dispensador_ativo);
-    buf (LEDR[6], descarte_ativo);
+    buf (LEDR[6], descarte_ativo);		// Simula o descarte da garrafa
     buf (LEDR[7], vedacao_ativa);
     buf (LEDR[8], valvula_ativa);
     buf (LEDR[9], motor_ativo);
@@ -75,6 +78,7 @@ module projeto_vinho_top (
     // SINAIS INTERNOS (WIRES)
     // ========================================================================
     
+    // Sinais de reset e clock
     wire clk;
     wire reset;
     wire not_key1;
@@ -83,13 +87,17 @@ module projeto_vinho_top (
     not (not_key1, KEY[1]);                  // KEY[1] é ativo baixo
     buf (reset, not_key1);
     
+    // Sinais dos debouncers
     wire pulso_start;
+    wire pulso_reset;
     
-    // Sinais da FSM Mestre
+    // Sinais da FSM Mestre (COMANDOS DISTINTOS)
+    wire cmd_mover_para_enchimento;
+    wire cmd_mover_para_cq;
+    wire cmd_mover_para_final;
     wire cmd_encher;
     wire cmd_vedar;
-    wire cmd_verificar_cq;
-    wire incrementar_duzia;
+    wire incrementar_garrafa;
     
     // Sinais das FSMs Escravas
     wire enchimento_concluido;
@@ -102,84 +110,99 @@ module projeto_vinho_top (
     wire [6:0] contador_rolhas;
     wire [6:0] contador_duzias;
     
+    // NOTA: A FSM Esteira será usada para todos os movimentos
+    // O sensor apropriado deve ser selecionado baseado no comando atual
+    // Vamos criar 3 instâncias separadas para maior clareza
+    
+    or (motor_ativo, esteira_enchimento);
+    
+	 // Uma garrafa concluida
+	 // Possivelmente sera necessario mudar essa porta end para timer_1s
     // ========================================================================
     // INSTANCIAÇÃO DOS MÓDULOS
     // ========================================================================
     
+    // ------------------------------------------------------------------------
     // 1. DEBOUNCER para START (KEY0)
+    // ------------------------------------------------------------------------
     debounce debounce_start (
         .clk(clk),
         .reset(reset),
         .button_in(KEY[0]),
         .pulse_out(pulso_start)
     );
+	 
+    // ------------------------------------------------------------------------
+    // 6. FSM ENCHIMENTO
+    // ------------------------------------------------------------------------
+//	 wire esteira_enchimento;
+   // fsm_enchimento fsm_enchimento_inst (
+      //  .clk(clk),
+     //   .reset(reset),
+     //   .cmd_iniciar(iniciar),
+     //   .sensor_nivel(sensor_nivel),
+	//	  .garrafa_concluida(garrafa_concluida),
+	//	  .led1(LEDR[1]),
+	//	  .led2(LEDR[2]),
+	//	  .esteira(esteira_enchimento),
+    //    .valvula_ativa(valvula_ativa),
+     //   .tarefa_concluida(enchimento_concluido)
+    //);
     
-    // 2. FSM MESTRE (Sequenciador Principal)
-    fsm_mestre fsm_mestre_inst (
-        .clk(clk),
-        .reset(reset),
-        .start(pulso_start),
-        .alarme_rolha(alarme_rolha_vazia),
-        
-        // Sensores
-        .sensor_enchimento(sensor_posicao_enchimento),
-        .sensor_vedacao(sensor_vedacao),
-        .sensor_cq(sensor_posicao_cq),
-        .sensor_descarte(sensor_descarte),
-        .sensor_final(sensor_final),
-        
-        // Inputs das FSMs escravas
-        .enchimento_concluido(enchimento_concluido),
-        .vedacao_concluida(vedacao_concluida),
-        .cq_concluida(cq_concluida),
-        .garrafa_aprovada(garrafa_aprovada),
-        
-        // Outputs Comandos
-        .motor_ativo(motor_ativo),      // Controle DIRETO do motor
-        .cmd_encher(cmd_encher),
-        .cmd_vedar(cmd_vedar),
-        .cmd_verificar_cq(cmd_verificar_cq),
-        .descarte_ativo(descarte_ativo), // Controle DIRETO do descarte
-        .incrementar_duzia(incrementar_duzia)
-    );
+    // ------------------------------------------------------------------------
+    // 7. FSM VEDAÇÃO
+    // ------------------------------------------------------------------------
+    //fsm_vedacao fsm_vedacao_inst (
+     //   .clk(clk),
+      //  .reset(reset),
+      //  .cmd_iniciar(enchimento_concluido),
+		 // .cq_concluido(cq_concluida),
+      //  .alarme_rolha(alarme_rolha_vazia),
+      //  .vedacao_ativa(vedacao_ativa),
+       // .decrementar_rolha(decrementar_rolha),
+      //  .tarefa_concluida(vedacao_concluida)
+    //);
     
-    // 3. FSM ESTEIRA - REMOVIDA (Simplificação Arquitetural)
-    
-    // 4. FSM ENCHIMENTO
-    fsm_enchimento fsm_enchimento_inst (
-        .clk(clk),
-        .reset(reset),
-        .cmd_iniciar(cmd_encher),
-        .sensor_nivel(sensor_nivel),
-        .valvula_ativa(valvula_ativa),
-        .tarefa_concluida(enchimento_concluido)
-    );
-    
-    // 5. FSM VEDAÇÃO
-    fsm_vedacao fsm_vedacao_inst (
-        .clk(clk),
-        .reset(reset),
-        .cmd_iniciar(cmd_vedar),
-        .alarme_rolha(alarme_rolha_vazia),
-        .vedacao_ativa(vedacao_ativa),
-        .decrementar_rolha(decrementar_rolha),
-        .tarefa_concluida(vedacao_concluida)
-    );
-    
-    // 6. FSM CONTROLE DE QUALIDADE
-    fsm_cq_descarte fsm_cq_inst (
-        .clk(clk),
-        .reset(reset),
-        .cmd_verificar(cmd_verificar_cq),
-        .sensor_cq(sensor_posicao_cq),
-        .pulso_start(pulso_start),
-        .resultado_cq(resultado_cq),
-        //.descarte_ativo(descarte_ativo), // Agora controlado pelo Mestre
-        .garrafa_aprovada(garrafa_aprovada),
-        .tarefa_concluida(cq_concluida)
-    );
-    
-    // 7. CONTADOR DE ROLHAS
+	 
+	 
+    // ------------------------------------------------------------------------
+    // 8. FSM CONTROLE DE QUALIDADE E DESCARTE
+    // ------------------------------------------------------------------------
+	// wire cmd_cq, idle_cq;
+	 //and (cmd_cq, vedacao_concluida, enchimento_concluido);
+    //fsm_cq_descarte fsm_cq_inst (
+     //   .clk(clk),
+     //   .reset(reset),
+    //    .start(vedacao_concluida),
+     //   .aprovado(aprovado_cq),
+      //  .reprovado(reprovado_cq),
+		 // .garrafa_concluida(garrafa_concluida),
+       // .descarte_ativo(descarte_ativo),
+       // .garrafa_aprovada(garrafa_aprovada),
+       // .tarefa_concluida(cq_concluida),
+		  //.estado_idle(idle_cq)
+//    );
+	 wire posicao_cq;
+	 
+    fsm_main (
+		.clk(clk),                      // Clock de 50MHz
+		.reset(reset),                    // Reset global
+		.cmd_iniciar(iniciar),              // Comando do mestre para iniciar enchimento
+		.sensor_nivel(sensor_nivel),             // SW1 - Sensor de nível (1 = cheia)
+		.alarme_rolha(alarme_rolha_vazia),             // Alarme de falta de rolha
+		.aprovado(aprovado_cq),                // SW2 - Aprovar CQ
+		.reprovado(reprovado_cq),              // SW3 - Reprovar CQ
+		.esteira(esteira_enchimento),						// LEDR[9] - Motor ligado
+		.valvula_ativa(valvula_ativa),           // LEDR[8] - Válvula de enchimento
+		.vedacao_ativa(vedacao_ativa),           // LEDR[7] - Atuador de vedação
+		.decrementar_rolha(decrementar_rolha),       // Sinal para decrementar contador
+		.descarte_ativo(descarte_ativo),          // LEDR[6] - Atuador de descarte
+		.garrafa_aprovada(garrafa_aprovada),        // Sinal para incrementar contador de dúzias
+		.posicao_cq(posicao_cq)
+	);
+    // ------------------------------------------------------------------------
+    // 9. CONTADOR DE ROLHAS
+    // ------------------------------------------------------------------------
     contador_rolhas contador_rolhas_inst (
         .clk(clk),
         .reset(reset),
@@ -190,23 +213,29 @@ module projeto_vinho_top (
         .contador_valor(contador_rolhas)
     );
     
-    // 8. CONTADOR DE DÚZIAS
-    contador_duzias contador_duzias_inst (
+    // ------------------------------------------------------------------------
+    // 10. CONTADOR DE DÚZIAS
+    // ------------------------------------------------------------------------
+	 buf (incrementar_garrafa, garrafa_aprovada);
+    contador_duzias_v2 contador_duzias_inst (
         .clk(clk),
         .reset(reset),
-        .zera_contagem(pulso_start),     // FIX: Start zera contagem
-        .incrementar(incrementar_duzia),
+        .incrementar(incrementar_garrafa),
         .contador_valor(contador_duzias)
     );
     
-    // 9. DECODIFICADOR DISPLAY - ROLHAS
+    // ------------------------------------------------------------------------
+    // 11. DECODIFICADOR DISPLAY - ROLHAS (HEX1-HEX0)
+    // ------------------------------------------------------------------------
     decodificador_display dec_rolhas (
         .valor(contador_rolhas),
         .hex1(HEX1),
         .hex0(HEX0)
     );
     
-    // 10. DECODIFICADOR DISPLAY - DÚZIAS
+    // ------------------------------------------------------------------------
+    // 12. DECODIFICADOR DISPLAY - DÚZIAS (HEX3-HEX2)
+    // ------------------------------------------------------------------------
     decodificador_display dec_duzias (
         .valor(contador_duzias),
         .hex1(HEX3),
@@ -214,3 +243,4 @@ module projeto_vinho_top (
     );
 
 endmodule
+

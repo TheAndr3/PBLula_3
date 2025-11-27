@@ -1,96 +1,79 @@
 // ============================================================================
 // Módulo: fsm_cq_descarte.v
-// Descrição: FSM MOORE para controle de qualidade
-//            Verifica se a garrafa foi aprovada ou reprovada pelo operador
-//            Inclui timer de inspeção para evitar decisões acidentais
+// Descrição: FSM MOORE para controle de qualidade e descarte
+//            Verifica se a garrafa foi aprovada ou reprovada
+//            Aciona o descarte se reprovada
 // Tipo: Verilog COMPORTAMENTAL (FSM MOORE)
 // ============================================================================
 
 module fsm_cq_descarte (
     input wire clk,                      // Clock de 50MHz
     input wire reset,                    // Reset global
-    input wire cmd_verificar,            // Comando do mestre para verificar CQ
-    input wire sensor_cq,                // SW2 - Sensor de posição CQ
-    input wire pulso_start,              // KEY[0] para confirmar decisão
-    input wire resultado_cq,             // SW3 - Resultado CQ (0=Reprovado, 1=Aprovado)
-    output wire garrafa_aprovada,        // 1 = Aprovada, 0 = Reprovada
-    output wire tarefa_concluida         // Sinal de volta para o mestre
+    input wire start,            // Comando para começar o controle de qualidade
+    input wire aprovado,                // SW2 - Sensor de posição CQ
+    input wire reprovado,              // KEY[0] para confirmar decisão
+	 input wire garrafa_concluida,
+    output wire descarte_ativo,          // LEDR[6] - Atuador de descarte
+    output wire garrafa_aprovada,        // Sinal para incrementar contador de dúzias
+    output wire tarefa_concluida,         // Sinal de volta para o mestre
+	 output wire estado_idle
 );
 
     // Estados da FSM
-    localparam IDLE = 3'd0;
-    localparam VERIFICANDO = 3'd1;
-    localparam PAUSA_INSPECAO = 3'd2;   // Novo estado: atraso para inspeção
-    localparam AGUARDA_DECISAO = 3'd3;
-    localparam DECISAO_TOMADA = 3'd4;
+    localparam IDLE = 2'd0;
+    localparam DESCARTANDO = 2'd1;
+    localparam APROVADO = 2'd2;
     
-    reg [2:0] estado_atual;
-    reg resultado_armazenado; // Armazena o resultado da decisão
+    reg [1:0] estado_atual;
     
-    // Timer para simular tempo de inspeção da máquina (5 segundos)
-    reg [27:0] timer;
-    parameter TEMPO_INSPECAO = 28'd250000000; // 5.0s a 50MHz
-    reg tempo_inspecao_completo;
+    // Timer para simular o tempo de descarte (0.5 segundos)
+    reg [25:0] timer;
+    parameter TEMPO_DESCARTE = 26'd25000000; // 0.5s a 50MHz
+    reg tempo_completo;
     
-    // Lógica de transição de estados (SEQUENCIAL)
+    // Lógica de transição de estados (SEQUENCIAL - COMPORTAMENTAL)
     always @(posedge clk or posedge reset) begin
         if (reset) begin
             estado_atual <= IDLE;
-            resultado_armazenado <= 1'b0;
             timer <= 0;
-            tempo_inspecao_completo <= 1'b0;
+            tempo_completo <= 1'b0;
         end else begin
-            // Lógica do Timer
-            if (estado_atual == PAUSA_INSPECAO) begin
-                timer <= timer + 1;
-                if (timer >= TEMPO_INSPECAO) begin
-                    tempo_inspecao_completo <= 1'b1;
-                end
-            end else begin
-                timer <= 0;
-                tempo_inspecao_completo <= 1'b0;
-            end
-            
+		  
             case (estado_atual)
                 IDLE: begin
-                    if (cmd_verificar) begin
-                        estado_atual <= VERIFICANDO;
+                    timer <= 0;
+						  tempo_completo <= 1'b0;
+                    if (start && reprovado && !aprovado) begin
+                        estado_atual <= DESCARTANDO;
                     end
-                    resultado_armazenado <= 1'b0; // Reset do resultado
-                end
-                
-                VERIFICANDO: begin
-                    // Aguarda o sensor CQ detectar a garrafa
-                    if (sensor_cq) begin
-                        estado_atual <= PAUSA_INSPECAO; // Inicia inspeção
+						  if (start && aprovado && !reprovado) begin
+                        estado_atual <= APROVADO;
                     end
+						  
                 end
-                
-                PAUSA_INSPECAO: begin
-                    // Aguarda tempo de inspeção visual/máquina
-                    if (tempo_inspecao_completo) begin
-                        estado_atual <= AGUARDA_DECISAO;
-                    end
-                end
-                
-                AGUARDA_DECISAO: begin
-                    // Aguarda o operador pressionar START para confirmar
-                    if (pulso_start) begin
-                        // Captura a decisão
-                        resultado_armazenado <= resultado_cq;
-                        estado_atual <= DECISAO_TOMADA;
+					 
+                DESCARTANDO: begin
+							timer <= timer+1;
+							
+							if (timer >= TEMPO_DESCARTE) begin
+								 tempo_completo <= 1'b1;
+							end
+                    // Transição após o tempo de descarte
+                    if (garrafa_concluida && tempo_completo) begin
+                        estado_atual <= IDLE;
                     end
                 end
                 
-                DECISAO_TOMADA: begin
+                APROVADO: begin
                     // Aguarda o comando ser desligado para voltar ao IDLE
-                    if (!cmd_verificar) begin
+                    if (garrafa_concluida) begin
                         estado_atual <= IDLE;
                     end
                 end
                 
                 default: begin
                     estado_atual <= IDLE;
+                    timer <= 0;
                 end
             endcase
         end
@@ -99,24 +82,38 @@ module fsm_cq_descarte (
     // ========================================================================
     // LÓGICA MOORE: Saídas dependem APENAS do ESTADO (ESTRUTURAL - PORTAS)
     // ========================================================================
-    // Extração dos bits do estado
-    // IDLE=000, VERIFICANDO=001, PAUSA=010, AGUARDA=011, TOMADA=100
-    wire state_bit0, state_bit1, state_bit2;
+    // Extração dos bits do estado (3 bits: estado_atual[2:0])
+    // Codificação: IDLE=000, VERIFICANDO=001, AGUARDA_DECISAO=010, DESCARTANDO=011, APROVADO=100
+    wire state_bit0, state_bit1;
     buf (state_bit0, estado_atual[0]);
     buf (state_bit1, estado_atual[1]);
-    buf (state_bit2, estado_atual[2]);
     
-    wire ns0, ns1, ns2;
-    not (ns0, state_bit0);
-    not (ns1, state_bit1);
-    not (ns2, state_bit2);
+    // Sinais intermediários
+    wire not_state_bit0, not_state_bit1;
+    not (not_state_bit0, state_bit0);
+    not (not_state_bit1, state_bit1);
     
-    // tarefa_concluida = 1 quando estado_atual == DECISAO_TOMADA (100)
-    and (tarefa_concluida, state_bit2, ns1, ns0);
+    // Detecção de estados específicos
+	 and (estado_idle, not_state_bit1, not_state_bit0);
+    // DESCARTANDO (01): state_bit2=0, state_bit1=1, state_bit0=1
+    wire estado_descartando;
+    and (estado_descartando, not_state_bit1, state_bit0);
     
-    // garrafa_aprovada = 1 quando (estado_atual == DECISAO_TOMADA) AND (resultado_armazenado == 1)
-    wire res_cq;
-    buf (res_cq, resultado_armazenado);
-    and (garrafa_aprovada, tarefa_concluida, res_cq);
+    // APROVADO (10): state_bit2=1, state_bit1=0, state_bit0=0
+    wire estado_aprovado;
+    and (estado_aprovado, state_bit1, not_state_bit0);
+    
+    // Saídas
+    // descarte_ativo = 1 quando estado_atual == DESCARTANDO (011)
+    buf (descarte_ativo, estado_descartando);
+	 wire descarte_conc;
+	 or (descarte_conc, tempo_completo, estado_descartando);
+    
+    // tarefa_concluida = 1 quando estado_atual == APROVADO (100)
+    or (tarefa_concluida, estado_aprovado, descarte_conc);
+    
+    // garrafa_aprovada = 1 quando estado_atual == APROVADO (100)
+    buf (garrafa_aprovada, estado_aprovado);
 
 endmodule
+
