@@ -27,7 +27,6 @@ module projeto_vinho_top (
     // ========================================================================
     // MAPEAMENTO DE ENTRADAS (Sensores) - ESTRUTURAL
     // ========================================================================
-    wire sensor_posicao_enchimento;          // SW[0]
     wire sensor_nivel;                       // SW[1]
     wire aprovado_cq;                        // SW[2]  Aprovado
     wire reprovado_cq;                       // SW[3] (Reprovado)
@@ -35,10 +34,27 @@ module projeto_vinho_top (
     wire sw_adicionar_rolha;                 // SW[7]
 	 wire iniciar;
     
-    buf (sensor_posicao_enchimento, SW[0]);
-    buf (sensor_nivel, SW[1]);
-    buf (aprovado_cq, SW[2]);
-    buf (reprovado_cq, SW[3]);
+	 debounce debounce_sensor (
+        .clk(clk),
+        .reset(reset),
+        .button_in(SW[1]),
+        .pulse_out(sensor_nivel)
+    );
+   // buf (sensor_nivel, SW[1]);
+	debounce debounce_apro_cq (
+        .clk(clk),
+        .reset(reset),
+        .button_in(SW[2]),
+        .pulse_out(aprovado_cq)
+    );
+   // buf (aprovado_cq, SW[2]);
+	 debounce debounce_repro_cq (
+        .clk(clk),
+        .reset(reset),
+        .button_in(SW[3]),
+        .pulse_out(reprovado_cq)
+    );
+    //buf (reprovado_cq, SW[3]);
 	 debounce debounce_add_rolha (
         .clk(clk),
         .reset(reset),
@@ -154,7 +170,7 @@ module projeto_vinho_top (
     // ------------------------------------------------------------------------
     //fsm_vedacao fsm_vedacao_inst (
      //   .clk(clk),
-      //  .reset(reset),
+      //  .reset(resetreset_duzias	),
       //  .cmd_iniciar(enchimento_concluido),
 		 // .cq_concluido(cq_concluida),
       //  .alarme_rolha(alarme_rolha_vazia),
@@ -218,7 +234,7 @@ module projeto_vinho_top (
     // ------------------------------------------------------------------------
 	 buf (incrementar_garrafa, garrafa_aprovada);
 	 
-	 // Lógica de Reset combinada: Global (KEY1) OU Start (KEY0)
+	  // Lógica de Reset combinada: Global (KEY1) OU Start (KEY0)
 	 wire reset_duzias;
 	 or (reset_duzias, reset, pulso_start);
 	 

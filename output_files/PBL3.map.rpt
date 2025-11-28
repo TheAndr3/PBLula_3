@@ -1,6 +1,6 @@
 Analysis & Synthesis report for PBL3
-Wed Nov 26 22:37:48 2025
-Quartus Prime Version 23.1std.1 Build 993 05/14/2024 SC Lite Edition
+Fri Nov 28 14:38:26 2025
+Quartus Prime Version 23.1std.0 Build 991 11/28/2023 SC Lite Edition
 
 
 ---------------------
@@ -18,27 +18,29 @@ Quartus Prime Version 23.1std.1 Build 993 05/14/2024 SC Lite Edition
  10. General Register Statistics
  11. Inverted Register Statistics
  12. Multiplexer Restructuring Statistics (Restructuring Performed)
- 13. Parameter Settings for User Entity Instance: debounce:debounce_add_rolha
- 14. Parameter Settings for User Entity Instance: debounce:debounce_start
- 15. Parameter Settings for User Entity Instance: fsm_main:comb_21
- 16. Parameter Settings for User Entity Instance: contador_rolhas:contador_rolhas_inst
- 17. Parameter Settings for User Entity Instance: contador_duzias_v2:contador_duzias_inst
- 18. Parameter Settings for Inferred Entity Instance: decodificador_display:dec_rolhas|lpm_divide:Mod0
- 19. Parameter Settings for Inferred Entity Instance: decodificador_display:dec_rolhas|lpm_divide:Div0
- 20. Parameter Settings for Inferred Entity Instance: decodificador_display:dec_duzias|lpm_divide:Mod0
- 21. Parameter Settings for Inferred Entity Instance: decodificador_display:dec_duzias|lpm_divide:Div0
- 22. Port Connectivity Checks: "debounce:debounce_start"
- 23. Post-Synthesis Netlist Statistics for Top Partition
- 24. Elapsed Time Per Partition
- 25. Analysis & Synthesis Messages
- 26. Analysis & Synthesis Suppressed Messages
+ 13. Parameter Settings for User Entity Instance: debounce:debounce_sensor
+ 14. Parameter Settings for User Entity Instance: debounce:debounce_apro_cq
+ 15. Parameter Settings for User Entity Instance: debounce:debounce_repro_cq
+ 16. Parameter Settings for User Entity Instance: debounce:debounce_add_rolha
+ 17. Parameter Settings for User Entity Instance: debounce:debounce_start
+ 18. Parameter Settings for User Entity Instance: fsm_main:comb_17
+ 19. Parameter Settings for User Entity Instance: contador_rolhas:contador_rolhas_inst
+ 20. Parameter Settings for User Entity Instance: contador_duzias_v2:contador_duzias_inst
+ 21. Parameter Settings for Inferred Entity Instance: decodificador_display:dec_rolhas|lpm_divide:Mod0
+ 22. Parameter Settings for Inferred Entity Instance: decodificador_display:dec_rolhas|lpm_divide:Div0
+ 23. Parameter Settings for Inferred Entity Instance: decodificador_display:dec_duzias|lpm_divide:Mod0
+ 24. Parameter Settings for Inferred Entity Instance: decodificador_display:dec_duzias|lpm_divide:Div0
+ 25. Post-Synthesis Netlist Statistics for Top Partition
+ 26. Elapsed Time Per Partition
+ 27. Analysis & Synthesis Messages
+ 28. Analysis & Synthesis Suppressed Messages
 
 
 
 ----------------
 ; Legal Notice ;
 ----------------
-Copyright (C) 2024  Intel Corporation. All rights reserved.
+Copyright (C) 2023  Intel Corporation. All rights reserved.
 Your use of Intel Corporation's design tools, logic functions 
 and other software and tools, and any partner logic 
 functions, and any output files from any of the foregoing 
@@ -58,15 +60,15 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                        ;
 +------------------------------------+------------------------------------------------+
-; Analysis & Synthesis Status        ; Successful - Wed Nov 26 22:37:48 2025          ;
-; Quartus Prime Version              ; 23.1std.1 Build 993 05/14/2024 SC Lite Edition ;
+; Analysis & Synthesis Status        ; Successful - Fri Nov 28 14:38:26 2025          ;
+; Quartus Prime Version              ; 23.1std.0 Build 991 11/28/2023 SC Lite Edition ;
 ; Revision Name                      ; PBL3                                           ;
 ; Top-level Entity Name              ; projeto_vinho_top                              ;
 ; Family                             ; MAX 10                                         ;
-; Total logic elements               ; 509                                            ;
-;     Total combinational functions  ; 506                                            ;
-;     Dedicated logic registers      ; 187                                            ;
-; Total registers                    ; 187                                            ;
+; Total logic elements               ; 629                                            ;
+;     Total combinational functions  ; 618                                            ;
+;     Dedicated logic registers      ; 287                                            ;
+; Total registers                    ; 287                                            ;
 ; Total pins                         ; 49                                             ;
 ; Total virtual pins                 ; 0                                              ;
 ; Total memory bits                  ; 0                                              ;
@@ -168,40 +170,41 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------+-------------+
 ; Processors                 ; Number      ;
 +----------------------------+-------------+
-; Number detected on machine ; 16          ;
-; Maximum allowed            ; 12          ;
+; Number detected on machine ; 20          ;
+; Maximum allowed            ; 14          ;
 ;                            ;             ;
 ; Average used               ; 1.00        ;
-; Maximum used               ; 12          ;
+; Maximum used               ; 14          ;
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processors 2-12        ;   0.0%      ;
+;     Processor 2            ;   0.0%      ;
+;     Processors 3-14        ;   0.0%      ;
 +----------------------------+-------------+
 
 
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Analysis & Synthesis Source Files Read                                                                                                                                                ;
-+----------------------------------+-----------------+------------------------------+-----------------------------------------------------------------------------------------+---------+
-; File Name with User-Entered Path ; Used in Netlist ; File Type                    ; File Name with Absolute Path                                                            ; Library ;
-+----------------------------------+-----------------+------------------------------+-----------------------------------------------------------------------------------------+---------+
-; contador_rolhas.v                ; yes             ; User Verilog HDL File        ; C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/contador_rolhas.v          ;         ;
-; debounce.v                       ; yes             ; User Verilog HDL File        ; C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/debounce.v                 ;         ;
-; decodificador_display.v          ; yes             ; User Verilog HDL File        ; C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/decodificador_display.v    ;         ;
-; projeto_vinho_top.v              ; yes             ; User Verilog HDL File        ; C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v        ;         ;
-; fsm_main.v                       ; yes             ; User Verilog HDL File        ; C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/fsm_main.v                 ;         ;
-; contador_duzias_v2.v             ; yes             ; User Verilog HDL File        ; C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/contador_duzias_v2.v       ;         ;
-; lpm_divide.tdf                   ; yes             ; Megafunction                 ; c:/intelfpga_lite/23.1std/quartus/libraries/megafunctions/lpm_divide.tdf                ;         ;
-; abs_divider.inc                  ; yes             ; Megafunction                 ; c:/intelfpga_lite/23.1std/quartus/libraries/megafunctions/abs_divider.inc               ;         ;
-; sign_div_unsign.inc              ; yes             ; Megafunction                 ; c:/intelfpga_lite/23.1std/quartus/libraries/megafunctions/sign_div_unsign.inc           ;         ;
-; aglobal231.inc                   ; yes             ; Megafunction                 ; c:/intelfpga_lite/23.1std/quartus/libraries/megafunctions/aglobal231.inc                ;         ;
-; db/lpm_divide_bkl.tdf            ; yes             ; Auto-Generated Megafunction  ; C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/lpm_divide_bkl.tdf      ;         ;
-; db/sign_div_unsign_akh.tdf       ; yes             ; Auto-Generated Megafunction  ; C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/sign_div_unsign_akh.tdf ;         ;
-; db/alt_u_div_uee.tdf             ; yes             ; Auto-Generated Megafunction  ; C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/alt_u_div_uee.tdf       ;         ;
-; db/add_sub_t3c.tdf               ; yes             ; Auto-Generated Megafunction  ; C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/add_sub_t3c.tdf         ;         ;
-; db/add_sub_u3c.tdf               ; yes             ; Auto-Generated Megafunction  ; C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/add_sub_u3c.tdf         ;         ;
-; db/lpm_divide_8sl.tdf            ; yes             ; Auto-Generated Megafunction  ; C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/lpm_divide_8sl.tdf      ;         ;
-+----------------------------------+-----------------+------------------------------+-----------------------------------------------------------------------------------------+---------+
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Source Files Read                                                                                                                                     ;
++----------------------------------+-----------------+------------------------------+------------------------------------------------------------------------------+---------+
+; File Name with User-Entered Path ; Used in Netlist ; File Type                    ; File Name with Absolute Path                                                 ; Library ;
++----------------------------------+-----------------+------------------------------+------------------------------------------------------------------------------+---------+
+; contador_rolhas.v                ; yes             ; User Verilog HDL File        ; /home/aluno/Downloads/PBLula_3-main_v5/contador_rolhas.v                     ;         ;
+; debounce.v                       ; yes             ; User Verilog HDL File        ; /home/aluno/Downloads/PBLula_3-main_v5/debounce.v                            ;         ;
+; decodificador_display.v          ; yes             ; User Verilog HDL File        ; /home/aluno/Downloads/PBLula_3-main_v5/decodificador_display.v               ;         ;
+; projeto_vinho_top.v              ; yes             ; User Verilog HDL File        ; /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v                   ;         ;
+; fsm_main.v                       ; yes             ; User Verilog HDL File        ; /home/aluno/Downloads/PBLula_3-main_v5/fsm_main.v                            ;         ;
+; contador_duzias_v2.v             ; yes             ; User Verilog HDL File        ; /home/aluno/Downloads/PBLula_3-main_v5/contador_duzias_v2.v                  ;         ;
+; lpm_divide.tdf                   ; yes             ; Megafunction                 ; /opt/intelFPGA_lite/23.1/quartus/libraries/megafunctions/lpm_divide.tdf      ;         ;
+; abs_divider.inc                  ; yes             ; Megafunction                 ; /opt/intelFPGA_lite/23.1/quartus/libraries/megafunctions/abs_divider.inc     ;         ;
+; sign_div_unsign.inc              ; yes             ; Megafunction                 ; /opt/intelFPGA_lite/23.1/quartus/libraries/megafunctions/sign_div_unsign.inc ;         ;
+; aglobal231.inc                   ; yes             ; Megafunction                 ; /opt/intelFPGA_lite/23.1/quartus/libraries/megafunctions/aglobal231.inc      ;         ;
+; db/lpm_divide_bkl.tdf            ; yes             ; Auto-Generated Megafunction  ; /home/aluno/Downloads/PBLula_3-main_v5/db/lpm_divide_bkl.tdf                 ;         ;
+; db/sign_div_unsign_akh.tdf       ; yes             ; Auto-Generated Megafunction  ; /home/aluno/Downloads/PBLula_3-main_v5/db/sign_div_unsign_akh.tdf            ;         ;
+; db/alt_u_div_uee.tdf             ; yes             ; Auto-Generated Megafunction  ; /home/aluno/Downloads/PBLula_3-main_v5/db/alt_u_div_uee.tdf                  ;         ;
+; db/add_sub_t3c.tdf               ; yes             ; Auto-Generated Megafunction  ; /home/aluno/Downloads/PBLula_3-main_v5/db/add_sub_t3c.tdf                    ;         ;
+; db/add_sub_u3c.tdf               ; yes             ; Auto-Generated Megafunction  ; /home/aluno/Downloads/PBLula_3-main_v5/db/add_sub_u3c.tdf                    ;         ;
+; db/lpm_divide_8sl.tdf            ; yes             ; Auto-Generated Megafunction  ; /home/aluno/Downloads/PBLula_3-main_v5/db/lpm_divide_8sl.tdf                 ;         ;
++----------------------------------+-----------------+------------------------------+------------------------------------------------------------------------------+---------+
 
 
 +--------------------------------------------------------------+
@@ -209,20 +212,20 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+----------------+
 ; Resource                                    ; Usage          ;
 +---------------------------------------------+----------------+
-; Estimated Total logic elements              ; 509            ;
+; Estimated Total logic elements              ; 629            ;
 ;                                             ;                ;
-; Total combinational functions               ; 506            ;
+; Total combinational functions               ; 618            ;
 ; Logic element usage by number of LUT inputs ;                ;
-;     -- 4 input functions                    ; 140            ;
-;     -- 3 input functions                    ; 81             ;
-;     -- <=2 input functions                  ; 285            ;
+;     -- 4 input functions                    ; 164            ;
+;     -- 3 input functions                    ; 78             ;
+;     -- <=2 input functions                  ; 376            ;
 ;                                             ;                ;
 ; Logic elements by mode                      ;                ;
-;     -- normal mode                          ; 284            ;
-;     -- arithmetic mode                      ; 222            ;
+;     -- normal mode                          ; 320            ;
+;     -- arithmetic mode                      ; 298            ;
 ;                                             ;                ;
-; Total registers                             ; 187            ;
-;     -- Dedicated logic registers            ; 187            ;
+; Total registers                             ; 287            ;
+;     -- Dedicated logic registers            ; 287            ;
 ;     -- I/O registers                        ; 0              ;
 ;                                             ;                ;
 ; I/O pins                                    ; 49             ;
@@ -230,9 +233,9 @@ https://fpgasoftware.intel.com/eula.
 ; Embedded Multiplier 9-bit elements          ; 0              ;
 ;                                             ;                ;
 ; Maximum fan-out node                        ; CLOCK_50~input ;
-; Maximum fan-out                             ; 187            ;
-; Total fan-out                               ; 2242           ;
-; Average fan-out                             ; 2.83           ;
+; Maximum fan-out                             ; 287            ;
+; Total fan-out                               ; 2883           ;
+; Average fan-out                             ; 2.87           ;
 +---------------------------------------------+----------------+
 
 
@@ -241,10 +244,14 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------+---------------------+---------------------------+-------------+------------+--------------+---------+-----------+------+--------------+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+--------------+
 ; Compilation Hierarchy Node                   ; Combinational ALUTs ; Dedicated Logic Registers ; Memory Bits ; UFM Blocks ; DSP Elements ; DSP 9x9 ; DSP 18x18 ; Pins ; Virtual Pins ; ADC blocks ; Full Hierarchy Name                                                                                                                                 ; Entity Name           ; Library Name ;
 +----------------------------------------------+---------------------+---------------------------+-------------+------------+--------------+---------+-----------+------+--------------+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+--------------+
-; |projeto_vinho_top                           ; 506 (0)             ; 187 (0)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 49   ; 0            ; 0          ; |projeto_vinho_top                                                                                                                                  ; projeto_vinho_top     ; work         ;
+; |projeto_vinho_top                           ; 618 (1)             ; 287 (0)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 49   ; 0            ; 0          ; |projeto_vinho_top                                                                                                                                  ; projeto_vinho_top     ; work         ;
 ;    |contador_duzias_v2:contador_duzias_inst| ; 16 (16)             ; 12 (12)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|contador_duzias_v2:contador_duzias_inst                                                                                          ; contador_duzias_v2    ; work         ;
 ;    |contador_rolhas:contador_rolhas_inst|    ; 98 (98)             ; 42 (42)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|contador_rolhas:contador_rolhas_inst                                                                                             ; contador_rolhas       ; work         ;
 ;    |debounce:debounce_add_rolha|             ; 28 (28)             ; 25 (25)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|debounce:debounce_add_rolha                                                                                                      ; debounce              ; work         ;
+;    |debounce:debounce_apro_cq|               ; 28 (28)             ; 25 (25)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|debounce:debounce_apro_cq                                                                                                        ; debounce              ; work         ;
+;    |debounce:debounce_repro_cq|              ; 28 (28)             ; 25 (25)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|debounce:debounce_repro_cq                                                                                                       ; debounce              ; work         ;
+;    |debounce:debounce_sensor|                ; 28 (28)             ; 25 (25)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|debounce:debounce_sensor                                                                                                         ; debounce              ; work         ;
+;    |debounce:debounce_start|                 ; 28 (28)             ; 25 (25)                   ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|debounce:debounce_start                                                                                                          ; debounce              ; work         ;
 ;    |decodificador_display:dec_duzias|        ; 103 (14)            ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|decodificador_display:dec_duzias                                                                                                 ; decodificador_display ; work         ;
 ;       |lpm_divide:Div0|                      ; 43 (0)              ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|decodificador_display:dec_duzias|lpm_divide:Div0                                                                                 ; lpm_divide            ; work         ;
 ;          |lpm_divide_8sl:auto_generated|     ; 43 (0)              ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|decodificador_display:dec_duzias|lpm_divide:Div0|lpm_divide_8sl:auto_generated                                                   ; lpm_divide_8sl        ; work         ;
@@ -263,7 +270,7 @@ https://fpgasoftware.intel.com/eula.
 ;          |lpm_divide_bkl:auto_generated|     ; 47 (0)              ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|decodificador_display:dec_rolhas|lpm_divide:Mod0|lpm_divide_bkl:auto_generated                                                   ; lpm_divide_bkl        ; work         ;
 ;             |sign_div_unsign_akh:divider|    ; 47 (0)              ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|decodificador_display:dec_rolhas|lpm_divide:Mod0|lpm_divide_bkl:auto_generated|sign_div_unsign_akh:divider                       ; sign_div_unsign_akh   ; work         ;
 ;                |alt_u_div_uee:divider|       ; 47 (47)             ; 0 (0)                     ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|decodificador_display:dec_rolhas|lpm_divide:Mod0|lpm_divide_bkl:auto_generated|sign_div_unsign_akh:divider|alt_u_div_uee:divider ; alt_u_div_uee         ; work         ;
-;    |fsm_main:comb_21|                        ; 156 (156)           ; 108 (108)                 ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|fsm_main:comb_21                                                                                                                 ; fsm_main              ; work         ;
+;    |fsm_main:comb_17|                        ; 155 (155)           ; 108 (108)                 ; 0           ; 0          ; 0            ; 0       ; 0         ; 0    ; 0            ; 0          ; |projeto_vinho_top|fsm_main:comb_17                                                                                                                 ; fsm_main              ; work         ;
 +----------------------------------------------+---------------------+---------------------------+-------------+------------+--------------+---------+-----------+------+--------------+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+--------------+
 Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
 
@@ -285,7 +292,7 @@ Encoding Type:  One-Hot
 +---------------------------------------+----------------------------------------+
 ; Register name                         ; Reason for Removal                     ;
 +---------------------------------------+----------------------------------------+
-; fsm_main:comb_21|estado_atual[3]      ; Stuck at GND due to stuck port data_in ;
+; fsm_main:comb_17|estado_atual[3]      ; Stuck at GND due to stuck port data_in ;
 ; Total Number of Removed Registers = 1 ;                                        ;
 +---------------------------------------+----------------------------------------+
 
@@ -295,10 +302,10 @@ Encoding Type:  One-Hot
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 187   ;
-; Number of registers using Synchronous Clear  ; 131   ;
+; Total registers                              ; 287   ;
+; Number of registers using Synchronous Clear  ; 211   ;
 ; Number of registers using Synchronous Load   ; 7     ;
-; Number of registers using Asynchronous Clear ; 187   ;
+; Number of registers using Asynchronous Clear ; 287   ;
 ; Number of registers using Asynchronous Load  ; 0     ;
 ; Number of registers using Clock Enable       ; 122   ;
 ; Number of registers using Preset             ; 0     ;
@@ -311,13 +318,29 @@ Encoding Type:  One-Hot
 ; Inverted Register                                      ; Fan out ;
 +--------------------------------------------------------+---------+
 ; contador_rolhas:contador_rolhas_inst|contador_valor[4] ; 15      ;
-; contador_rolhas:contador_rolhas_inst|contador_valor[2] ; 13      ;
-; contador_rolhas:contador_rolhas_inst|estoque           ; 3       ;
+; contador_rolhas:contador_rolhas_inst|contador_valor[2] ; 12      ;
+; contador_rolhas:contador_rolhas_inst|estoque           ; 4       ;
+; debounce:debounce_repro_cq|button_stable               ; 4       ;
+; debounce:debounce_repro_cq|button_stable_prev          ; 1       ;
+; debounce:debounce_apro_cq|button_stable                ; 4       ;
+; debounce:debounce_apro_cq|button_stable_prev           ; 1       ;
+; debounce:debounce_sensor|button_stable                 ; 4       ;
+; debounce:debounce_sensor|button_stable_prev            ; 1       ;
 ; debounce:debounce_add_rolha|button_stable              ; 4       ;
 ; debounce:debounce_add_rolha|button_stable_prev         ; 1       ;
+; debounce:debounce_start|button_stable                  ; 4       ;
+; debounce:debounce_start|button_stable_prev             ; 1       ;
+; debounce:debounce_repro_cq|button_sync_1               ; 2       ;
+; debounce:debounce_apro_cq|button_sync_1                ; 2       ;
+; debounce:debounce_sensor|button_sync_1                 ; 2       ;
 ; debounce:debounce_add_rolha|button_sync_1              ; 2       ;
+; debounce:debounce_start|button_sync_1                  ; 2       ;
+; debounce:debounce_repro_cq|button_sync_0               ; 1       ;
+; debounce:debounce_apro_cq|button_sync_0                ; 1       ;
+; debounce:debounce_sensor|button_sync_0                 ; 1       ;
 ; debounce:debounce_add_rolha|button_sync_0              ; 1       ;
-; Total number of inverted registers = 7                 ;         ;
+; debounce:debounce_start|button_sync_0                  ; 1       ;
+; Total number of inverted registers = 23                ;         ;
 +--------------------------------------------------------+---------+
 
 
@@ -326,16 +349,53 @@ Encoding Type:  One-Hot
 +--------------------+-----------+---------------+----------------------+------------------------+------------+---------------------------------------------------------------------------+
 ; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                                ;
 +--------------------+-----------+---------------+----------------------+------------------------+------------+---------------------------------------------------------------------------+
-; 3:1                ; 20 bits   ; 40 LEs        ; 20 LEs               ; 20 LEs                 ; Yes        ; |projeto_vinho_top|debounce:debounce_add_rolha|counter[14]                ;
-; 4:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; Yes        ; |projeto_vinho_top|contador_rolhas:contador_rolhas_inst|contador_valor[3] ;
-; 17:1               ; 26 bits   ; 286 LEs       ; 26 LEs               ; 260 LEs                ; Yes        ; |projeto_vinho_top|fsm_main:comb_21|tempo_motor[9]                        ;
-; 17:1               ; 26 bits   ; 286 LEs       ; 26 LEs               ; 260 LEs                ; Yes        ; |projeto_vinho_top|fsm_main:comb_21|tempo_ved[11]                         ;
-; 17:1               ; 26 bits   ; 286 LEs       ; 26 LEs               ; 260 LEs                ; Yes        ; |projeto_vinho_top|fsm_main:comb_21|tempo_descarte[4]                     ;
-; 17:1               ; 26 bits   ; 286 LEs       ; 26 LEs               ; 260 LEs                ; Yes        ; |projeto_vinho_top|fsm_main:comb_21|tempo_aprovado[1]                     ;
-; 21:1               ; 2 bits    ; 28 LEs        ; 6 LEs                ; 22 LEs                 ; Yes        ; |projeto_vinho_top|fsm_main:comb_21|estado_atual[3]                       ;
-; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |projeto_vinho_top|contador_rolhas:contador_rolhas_inst|contador_valor[2] ;
+; 3:1                ; 20 bits   ; 40 LEs        ; 20 LEs               ; 20 LEs                 ; Yes        ; |projeto_vinho_top|debounce:debounce_sensor|counter[2]                    ;
+; 3:1                ; 20 bits   ; 40 LEs        ; 20 LEs               ; 20 LEs                 ; Yes        ; |projeto_vinho_top|debounce:debounce_apro_cq|counter[0]                   ;
+; 3:1                ; 20 bits   ; 40 LEs        ; 20 LEs               ; 20 LEs                 ; Yes        ; |projeto_vinho_top|debounce:debounce_repro_cq|counter[9]                  ;
+; 3:1                ; 20 bits   ; 40 LEs        ; 20 LEs               ; 20 LEs                 ; Yes        ; |projeto_vinho_top|debounce:debounce_add_rolha|counter[0]                 ;
+; 3:1                ; 20 bits   ; 40 LEs        ; 20 LEs               ; 20 LEs                 ; Yes        ; |projeto_vinho_top|debounce:debounce_start|counter[2]                     ;
+; 4:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; Yes        ; |projeto_vinho_top|contador_rolhas:contador_rolhas_inst|contador_valor[6] ;
+; 17:1               ; 26 bits   ; 286 LEs       ; 26 LEs               ; 260 LEs                ; Yes        ; |projeto_vinho_top|fsm_main:comb_17|tempo_motor[12]                       ;
+; 17:1               ; 26 bits   ; 286 LEs       ; 26 LEs               ; 260 LEs                ; Yes        ; |projeto_vinho_top|fsm_main:comb_17|tempo_ved[12]                         ;
+; 17:1               ; 26 bits   ; 286 LEs       ; 26 LEs               ; 260 LEs                ; Yes        ; |projeto_vinho_top|fsm_main:comb_17|tempo_descarte[13]                    ;
+; 17:1               ; 26 bits   ; 286 LEs       ; 26 LEs               ; 260 LEs                ; Yes        ; |projeto_vinho_top|fsm_main:comb_17|tempo_aprovado[4]                     ;
+; 21:1               ; 2 bits    ; 28 LEs        ; 6 LEs                ; 22 LEs                 ; Yes        ; |projeto_vinho_top|fsm_main:comb_17|estado_atual[3]                       ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |projeto_vinho_top|contador_rolhas:contador_rolhas_inst|contador_valor[4] ;
 ; 6:1                ; 3 bits    ; 12 LEs        ; 6 LEs                ; 6 LEs                  ; No         ; |projeto_vinho_top|contador_rolhas:contador_rolhas_inst|Selector29        ;
 +--------------------+-----------+---------------+----------------------+------------------------+------------+---------------------------------------------------------------------------+
+
+
++-----------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: debounce:debounce_sensor ;
++----------------+----------------------+-------------------------------+
+; Parameter Name ; Value                ; Type                          ;
++----------------+----------------------+-------------------------------+
+; COUNTER_WIDTH  ; 20                   ; Signed Integer                ;
+; COUNTER_MAX    ; 11110100001001000000 ; Unsigned Binary               ;
++----------------+----------------------+-------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: debounce:debounce_apro_cq ;
++----------------+----------------------+--------------------------------+
+; Parameter Name ; Value                ; Type                           ;
++----------------+----------------------+--------------------------------+
+; COUNTER_WIDTH  ; 20                   ; Signed Integer                 ;
+; COUNTER_MAX    ; 11110100001001000000 ; Unsigned Binary                ;
++----------------+----------------------+--------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++-------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: debounce:debounce_repro_cq ;
++----------------+----------------------+---------------------------------+
+; Parameter Name ; Value                ; Type                            ;
++----------------+----------------------+---------------------------------+
+; COUNTER_WIDTH  ; 20                   ; Signed Integer                  ;
+; COUNTER_MAX    ; 11110100001001000000 ; Unsigned Binary                 ;
++----------------+----------------------+---------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
 
 
 +--------------------------------------------------------------------------+
@@ -361,7 +421,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 
 
 +---------------------------------------------------------------+
-; Parameter Settings for User Entity Instance: fsm_main:comb_21 ;
+; Parameter Settings for User Entity Instance: fsm_main:comb_17 ;
 +----------------+----------------------------+-----------------+
 ; Parameter Name ; Value                      ; Type            ;
 +----------------+----------------------------+-----------------+
@@ -486,40 +546,31 @@ Note: In order to hide this table in the UI and the text report file, please set
 Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
 
 
-+---------------------------------------------------------------------------------------------------------------------+
-; Port Connectivity Checks: "debounce:debounce_start"                                                                 ;
-+-----------+--------+----------+-------------------------------------------------------------------------------------+
-; Port      ; Type   ; Severity ; Details                                                                             ;
-+-----------+--------+----------+-------------------------------------------------------------------------------------+
-; pulse_out ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
-+-----------+--------+----------+-------------------------------------------------------------------------------------+
-
-
 +-----------------------------------------------------+
 ; Post-Synthesis Netlist Statistics for Top Partition ;
 +-----------------------+-----------------------------+
 ; Type                  ; Count                       ;
 +-----------------------+-----------------------------+
 ; boundary_port         ; 49                          ;
-; cycloneiii_ff         ; 187                         ;
-;     CLR               ; 45                          ;
-;     CLR SCLR          ; 20                          ;
+; cycloneiii_ff         ; 287                         ;
+;     CLR               ; 65                          ;
+;     CLR SCLR          ; 100                         ;
 ;     ENA CLR           ; 4                           ;
 ;     ENA CLR SCLR      ; 111                         ;
 ;     ENA CLR SLD       ; 7                           ;
-; cycloneiii_lcell_comb ; 511                         ;
-;     arith             ; 222                         ;
-;         2 data inputs ; 169                         ;
+; cycloneiii_lcell_comb ; 623                         ;
+;     arith             ; 298                         ;
+;         2 data inputs ; 245                         ;
 ;         3 data inputs ; 53                          ;
-;     normal            ; 289                         ;
+;     normal            ; 325                         ;
 ;         0 data inputs ; 17                          ;
-;         1 data inputs ; 15                          ;
-;         2 data inputs ; 89                          ;
-;         3 data inputs ; 28                          ;
-;         4 data inputs ; 140                         ;
+;         1 data inputs ; 23                          ;
+;         2 data inputs ; 96                          ;
+;         3 data inputs ; 25                          ;
+;         4 data inputs ; 164                         ;
 ;                       ;                             ;
 ; Max LUT depth         ; 11.50                       ;
-; Average LUT depth     ; 5.70                        ;
+; Average LUT depth     ; 4.91                        ;
 +-----------------------+-----------------------------+
 
 
@@ -528,7 +579,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:01     ;
+; Top            ; 00:00:00     ;
 +----------------+--------------+
 
 
@@ -537,121 +588,107 @@ Note: In order to hide this table in the UI and the text report file, please set
 +-------------------------------+
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
-    Info: Version 23.1std.1 Build 993 05/14/2024 SC Lite Edition
-    Info: Processing started: Wed Nov 26 22:37:39 2025
+    Info: Version 23.1std.0 Build 991 11/28/2023 SC Lite Edition
+    Info: Processing started: Fri Nov 28 14:38:22 2025
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off PBL3 -c PBL3
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
-Info (20030): Parallel compilation is enabled and will use 12 of the 12 processors detected
-Info (12021): Found 1 design units, including 1 entities, in source file contador_duzias.v
-    Info (12023): Found entity 1: contador_duzias File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/contador_duzias.v Line: 9
+Info (20030): Parallel compilation is enabled and will use 14 of the 14 processors detected
 Info (12021): Found 1 design units, including 1 entities, in source file contador_rolhas.v
-    Info (12023): Found entity 1: contador_rolhas File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/contador_rolhas.v Line: 8
+    Info (12023): Found entity 1: contador_rolhas File: /home/aluno/Downloads/PBLula_3-main_v5/contador_rolhas.v Line: 8
 Info (12021): Found 1 design units, including 1 entities, in source file debounce.v
-    Info (12023): Found entity 1: debounce File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/debounce.v Line: 8
+    Info (12023): Found entity 1: debounce File: /home/aluno/Downloads/PBLula_3-main_v5/debounce.v Line: 8
 Info (12021): Found 1 design units, including 1 entities, in source file decodificador_display.v
-    Info (12023): Found entity 1: decodificador_display File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/decodificador_display.v Line: 8
-Info (12021): Found 1 design units, including 1 entities, in source file fsm_cq_descarte.v
-    Info (12023): Found entity 1: fsm_cq_descarte File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/fsm_cq_descarte.v Line: 9
-Info (12021): Found 1 design units, including 1 entities, in source file fsm_enchimento.v
-    Info (12023): Found entity 1: fsm_enchimento File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/fsm_enchimento.v Line: 9
-Info (12021): Found 1 design units, including 1 entities, in source file fsm_esteira.v
-    Info (12023): Found entity 1: fsm_esteira File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/fsm_esteira.v Line: 9
-Info (12021): Found 1 design units, including 1 entities, in source file fsm_mestre.v
-    Info (12023): Found entity 1: fsm_mestre File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/fsm_mestre.v Line: 9
-Info (12021): Found 1 design units, including 1 entities, in source file fsm_vedacao.v
-    Info (12023): Found entity 1: fsm_vedacao File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/fsm_vedacao.v Line: 9
+    Info (12023): Found entity 1: decodificador_display File: /home/aluno/Downloads/PBLula_3-main_v5/decodificador_display.v Line: 8
 Info (12021): Found 1 design units, including 1 entities, in source file projeto_vinho_top.v
-    Info (12023): Found entity 1: projeto_vinho_top File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 9
-Info (12021): Found 1 design units, including 1 entities, in source file timer_1s.v
-    Info (12023): Found entity 1: timer_1s File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/timer_1s.v Line: 1
+    Info (12023): Found entity 1: projeto_vinho_top File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 9
 Info (12021): Found 1 design units, including 1 entities, in source file fsm_main.v
-    Info (12023): Found entity 1: fsm_main File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/fsm_main.v Line: 1
+    Info (12023): Found entity 1: fsm_main File: /home/aluno/Downloads/PBLula_3-main_v5/fsm_main.v Line: 1
 Info (12021): Found 1 design units, including 1 entities, in source file contador_duzias_v2.v
-    Info (12023): Found entity 1: contador_duzias_v2 File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/contador_duzias_v2.v Line: 1
-Warning (10236): Verilog HDL Implicit Net warning at projeto_vinho_top.v(117): created implicit net for "esteira_enchimento" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 117
-Critical Warning (10846): Verilog HDL Instantiation warning at projeto_vinho_top.v(202): instance has no name File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 202
+    Info (12023): Found entity 1: contador_duzias_v2 File: /home/aluno/Downloads/PBLula_3-main_v5/contador_duzias_v2.v Line: 1
+Warning (10236): Verilog HDL Implicit Net warning at projeto_vinho_top.v(133): created implicit net for "esteira_enchimento" File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 133
+Critical Warning (10846): Verilog HDL Instantiation warning at projeto_vinho_top.v(218): instance has no name File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 218
 Info (12127): Elaborating entity "projeto_vinho_top" for the top level hierarchy
-Warning (10034): Output port "LEDR[2..1]" at projeto_vinho_top.v(20) has no driver File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 20
-Info (12128): Elaborating entity "debounce" for hierarchy "debounce:debounce_add_rolha" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 47
-Warning (10230): Verilog HDL assignment warning at debounce.v(46): truncated value with size 32 to match size of target (20) File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/debounce.v Line: 46
-Info (12128): Elaborating entity "fsm_main" for hierarchy "fsm_main:comb_21" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 202
-Warning (10230): Verilog HDL assignment warning at fsm_main.v(58): truncated value with size 32 to match size of target (26) File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/fsm_main.v Line: 58
-Warning (10230): Verilog HDL assignment warning at fsm_main.v(82): truncated value with size 32 to match size of target (26) File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/fsm_main.v Line: 82
-Warning (10230): Verilog HDL assignment warning at fsm_main.v(100): truncated value with size 32 to match size of target (26) File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/fsm_main.v Line: 100
-Warning (10230): Verilog HDL assignment warning at fsm_main.v(110): truncated value with size 32 to match size of target (26) File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/fsm_main.v Line: 110
-Info (12128): Elaborating entity "contador_rolhas" for hierarchy "contador_rolhas:contador_rolhas_inst" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 214
-Warning (10230): Verilog HDL assignment warning at contador_rolhas.v(89): truncated value with size 32 to match size of target (26) File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/contador_rolhas.v Line: 89
-Warning (10230): Verilog HDL assignment warning at contador_rolhas.v(135): truncated value with size 32 to match size of target (7) File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/contador_rolhas.v Line: 135
-Warning (10230): Verilog HDL assignment warning at contador_rolhas.v(138): truncated value with size 32 to match size of target (7) File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/contador_rolhas.v Line: 138
-Info (12128): Elaborating entity "contador_duzias_v2" for hierarchy "contador_duzias_v2:contador_duzias_inst" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 225
-Warning (10230): Verilog HDL assignment warning at contador_duzias_v2.v(35): truncated value with size 32 to match size of target (7) File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/contador_duzias_v2.v Line: 35
-Warning (10230): Verilog HDL assignment warning at contador_duzias_v2.v(37): truncated value with size 32 to match size of target (4) File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/contador_duzias_v2.v Line: 37
-Info (12128): Elaborating entity "decodificador_display" for hierarchy "decodificador_display:dec_rolhas" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 234
-Warning (10230): Verilog HDL assignment warning at decodificador_display.v(18): truncated value with size 32 to match size of target (4) File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/decodificador_display.v Line: 18
-Warning (10230): Verilog HDL assignment warning at decodificador_display.v(19): truncated value with size 32 to match size of target (4) File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/decodificador_display.v Line: 19
-Info (13014): Ignored 21 buffer(s)
-    Info (13019): Ignored 21 SOFT buffer(s)
+Warning (10034): Output port "LEDR[2..1]" at projeto_vinho_top.v(20) has no driver File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 20
+Info (12128): Elaborating entity "debounce" for hierarchy "debounce:debounce_sensor" File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 42
+Warning (10230): Verilog HDL assignment warning at debounce.v(46): truncated value with size 32 to match size of target (20) File: /home/aluno/Downloads/PBLula_3-main_v5/debounce.v Line: 46
+Info (12128): Elaborating entity "fsm_main" for hierarchy "fsm_main:comb_17" File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 218
+Warning (10230): Verilog HDL assignment warning at fsm_main.v(58): truncated value with size 32 to match size of target (26) File: /home/aluno/Downloads/PBLula_3-main_v5/fsm_main.v Line: 58
+Warning (10230): Verilog HDL assignment warning at fsm_main.v(82): truncated value with size 32 to match size of target (26) File: /home/aluno/Downloads/PBLula_3-main_v5/fsm_main.v Line: 82
+Warning (10230): Verilog HDL assignment warning at fsm_main.v(100): truncated value with size 32 to match size of target (26) File: /home/aluno/Downloads/PBLula_3-main_v5/fsm_main.v Line: 100
+Warning (10230): Verilog HDL assignment warning at fsm_main.v(110): truncated value with size 32 to match size of target (26) File: /home/aluno/Downloads/PBLula_3-main_v5/fsm_main.v Line: 110
+Info (12128): Elaborating entity "contador_rolhas" for hierarchy "contador_rolhas:contador_rolhas_inst" File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 230
+Warning (10230): Verilog HDL assignment warning at contador_rolhas.v(89): truncated value with size 32 to match size of target (26) File: /home/aluno/Downloads/PBLula_3-main_v5/contador_rolhas.v Line: 89
+Warning (10230): Verilog HDL assignment warning at contador_rolhas.v(135): truncated value with size 32 to match size of target (7) File: /home/aluno/Downloads/PBLula_3-main_v5/contador_rolhas.v Line: 135
+Warning (10230): Verilog HDL assignment warning at contador_rolhas.v(138): truncated value with size 32 to match size of target (7) File: /home/aluno/Downloads/PBLula_3-main_v5/contador_rolhas.v Line: 138
+Info (12128): Elaborating entity "contador_duzias_v2" for hierarchy "contador_duzias_v2:contador_duzias_inst" File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 246
+Warning (10230): Verilog HDL assignment warning at contador_duzias_v2.v(35): truncated value with size 32 to match size of target (7) File: /home/aluno/Downloads/PBLula_3-main_v5/contador_duzias_v2.v Line: 35
+Warning (10230): Verilog HDL assignment warning at contador_duzias_v2.v(37): truncated value with size 32 to match size of target (4) File: /home/aluno/Downloads/PBLula_3-main_v5/contador_duzias_v2.v Line: 37
+Info (12128): Elaborating entity "decodificador_display" for hierarchy "decodificador_display:dec_rolhas" File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 255
+Warning (10230): Verilog HDL assignment warning at decodificador_display.v(18): truncated value with size 32 to match size of target (4) File: /home/aluno/Downloads/PBLula_3-main_v5/decodificador_display.v Line: 18
+Warning (10230): Verilog HDL assignment warning at decodificador_display.v(19): truncated value with size 32 to match size of target (4) File: /home/aluno/Downloads/PBLula_3-main_v5/decodificador_display.v Line: 19
+Info (13014): Ignored 18 buffer(s)
+    Info (13019): Ignored 18 SOFT buffer(s)
 Info (278001): Inferred 4 megafunctions from design logic
-    Info (278004): Inferred divider/modulo megafunction ("lpm_divide") from the following logic: "decodificador_display:dec_rolhas|Mod0" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/decodificador_display.v Line: 19
-    Info (278004): Inferred divider/modulo megafunction ("lpm_divide") from the following logic: "decodificador_display:dec_rolhas|Div0" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/decodificador_display.v Line: 18
-    Info (278004): Inferred divider/modulo megafunction ("lpm_divide") from the following logic: "decodificador_display:dec_duzias|Mod0" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/decodificador_display.v Line: 19
-    Info (278004): Inferred divider/modulo megafunction ("lpm_divide") from the following logic: "decodificador_display:dec_duzias|Div0" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/decodificador_display.v Line: 18
-Info (12130): Elaborated megafunction instantiation "decodificador_display:dec_rolhas|lpm_divide:Mod0" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/decodificador_display.v Line: 19
-Info (12133): Instantiated megafunction "decodificador_display:dec_rolhas|lpm_divide:Mod0" with the following parameter: File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/decodificador_display.v Line: 19
+    Info (278004): Inferred divider/modulo megafunction ("lpm_divide") from the following logic: "decodificador_display:dec_rolhas|Mod0" File: /home/aluno/Downloads/PBLula_3-main_v5/decodificador_display.v Line: 19
+    Info (278004): Inferred divider/modulo megafunction ("lpm_divide") from the following logic: "decodificador_display:dec_rolhas|Div0" File: /home/aluno/Downloads/PBLula_3-main_v5/decodificador_display.v Line: 18
+    Info (278004): Inferred divider/modulo megafunction ("lpm_divide") from the following logic: "decodificador_display:dec_duzias|Mod0" File: /home/aluno/Downloads/PBLula_3-main_v5/decodificador_display.v Line: 19
+    Info (278004): Inferred divider/modulo megafunction ("lpm_divide") from the following logic: "decodificador_display:dec_duzias|Div0" File: /home/aluno/Downloads/PBLula_3-main_v5/decodificador_display.v Line: 18
+Info (12130): Elaborated megafunction instantiation "decodificador_display:dec_rolhas|lpm_divide:Mod0" File: /home/aluno/Downloads/PBLula_3-main_v5/decodificador_display.v Line: 19
+Info (12133): Instantiated megafunction "decodificador_display:dec_rolhas|lpm_divide:Mod0" with the following parameter: File: /home/aluno/Downloads/PBLula_3-main_v5/decodificador_display.v Line: 19
     Info (12134): Parameter "LPM_WIDTHN" = "7"
     Info (12134): Parameter "LPM_WIDTHD" = "4"
     Info (12134): Parameter "LPM_NREPRESENTATION" = "UNSIGNED"
     Info (12134): Parameter "LPM_DREPRESENTATION" = "UNSIGNED"
 Info (12021): Found 1 design units, including 1 entities, in source file db/lpm_divide_bkl.tdf
-    Info (12023): Found entity 1: lpm_divide_bkl File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/lpm_divide_bkl.tdf Line: 25
+    Info (12023): Found entity 1: lpm_divide_bkl File: /home/aluno/Downloads/PBLula_3-main_v5/db/lpm_divide_bkl.tdf Line: 25
 Info (12021): Found 1 design units, including 1 entities, in source file db/sign_div_unsign_akh.tdf
-    Info (12023): Found entity 1: sign_div_unsign_akh File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/sign_div_unsign_akh.tdf Line: 25
+    Info (12023): Found entity 1: sign_div_unsign_akh File: /home/aluno/Downloads/PBLula_3-main_v5/db/sign_div_unsign_akh.tdf Line: 25
 Info (12021): Found 1 design units, including 1 entities, in source file db/alt_u_div_uee.tdf
-    Info (12023): Found entity 1: alt_u_div_uee File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/alt_u_div_uee.tdf Line: 27
+    Info (12023): Found entity 1: alt_u_div_uee File: /home/aluno/Downloads/PBLula_3-main_v5/db/alt_u_div_uee.tdf Line: 27
 Info (12021): Found 1 design units, including 1 entities, in source file db/add_sub_t3c.tdf
-    Info (12023): Found entity 1: add_sub_t3c File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/add_sub_t3c.tdf Line: 23
+    Info (12023): Found entity 1: add_sub_t3c File: /home/aluno/Downloads/PBLula_3-main_v5/db/add_sub_t3c.tdf Line: 23
 Info (12021): Found 1 design units, including 1 entities, in source file db/add_sub_u3c.tdf
-    Info (12023): Found entity 1: add_sub_u3c File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/add_sub_u3c.tdf Line: 23
-Info (12130): Elaborated megafunction instantiation "decodificador_display:dec_rolhas|lpm_divide:Div0" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/decodificador_display.v Line: 18
-Info (12133): Instantiated megafunction "decodificador_display:dec_rolhas|lpm_divide:Div0" with the following parameter: File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/decodificador_display.v Line: 18
+    Info (12023): Found entity 1: add_sub_u3c File: /home/aluno/Downloads/PBLula_3-main_v5/db/add_sub_u3c.tdf Line: 23
+Info (12130): Elaborated megafunction instantiation "decodificador_display:dec_rolhas|lpm_divide:Div0" File: /home/aluno/Downloads/PBLula_3-main_v5/decodificador_display.v Line: 18
+Info (12133): Instantiated megafunction "decodificador_display:dec_rolhas|lpm_divide:Div0" with the following parameter: File: /home/aluno/Downloads/PBLula_3-main_v5/decodificador_display.v Line: 18
     Info (12134): Parameter "LPM_WIDTHN" = "7"
     Info (12134): Parameter "LPM_WIDTHD" = "4"
     Info (12134): Parameter "LPM_NREPRESENTATION" = "UNSIGNED"
     Info (12134): Parameter "LPM_DREPRESENTATION" = "UNSIGNED"
 Info (12021): Found 1 design units, including 1 entities, in source file db/lpm_divide_8sl.tdf
-    Info (12023): Found entity 1: lpm_divide_8sl File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/lpm_divide_8sl.tdf Line: 25
-Info (13000): Registers with preset signals will power-up high File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/contador_rolhas.v Line: 30
+    Info (12023): Found entity 1: lpm_divide_8sl File: /home/aluno/Downloads/PBLula_3-main_v5/db/lpm_divide_8sl.tdf Line: 25
+Info (13000): Registers with preset signals will power-up high File: /home/aluno/Downloads/PBLula_3-main_v5/contador_rolhas.v Line: 30
 Info (13003): DEV_CLRn pin will set, and not reset, register with preset signal due to NOT Gate Push-Back
 Warning (13024): Output pins are stuck at VCC or GND
-    Warning (13410): Pin "LEDR[1]" is stuck at GND File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 20
-    Warning (13410): Pin "LEDR[2]" is stuck at GND File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 20
-    Warning (13410): Pin "LEDR[3]" is stuck at GND File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 20
+    Warning (13410): Pin "LEDR[1]" is stuck at GND File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 20
+    Warning (13410): Pin "LEDR[2]" is stuck at GND File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 20
+    Warning (13410): Pin "LEDR[3]" is stuck at GND File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 20
 Info (286030): Timing-Driven Synthesis is running
 Info (17016): Found the following redundant logic cells in design
-    Info (17048): Logic cell "decodificador_display:dec_rolhas|lpm_divide:Mod0|lpm_divide_bkl:auto_generated|sign_div_unsign_akh:divider|alt_u_div_uee:divider|add_sub_4_result_int[0]~10" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/alt_u_div_uee.tdf Line: 47
-    Info (17048): Logic cell "decodificador_display:dec_rolhas|lpm_divide:Div0|lpm_divide_8sl:auto_generated|sign_div_unsign_akh:divider|alt_u_div_uee:divider|add_sub_4_result_int[0]~10" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/db/alt_u_div_uee.tdf Line: 47
-Info (144001): Generated suppressed messages file C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/output_files/PBL3.map.smsg
+    Info (17048): Logic cell "decodificador_display:dec_rolhas|lpm_divide:Mod0|lpm_divide_bkl:auto_generated|sign_div_unsign_akh:divider|alt_u_div_uee:divider|add_sub_4_result_int[0]~10" File: /home/aluno/Downloads/PBLula_3-main_v5/db/alt_u_div_uee.tdf Line: 47
+    Info (17048): Logic cell "decodificador_display:dec_rolhas|lpm_divide:Div0|lpm_divide_8sl:auto_generated|sign_div_unsign_akh:divider|alt_u_div_uee:divider|add_sub_4_result_int[0]~10" File: /home/aluno/Downloads/PBLula_3-main_v5/db/alt_u_div_uee.tdf Line: 47
+Info (144001): Generated suppressed messages file /home/aluno/Downloads/PBLula_3-main_v5/output_files/PBL3.map.smsg
 Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
     Info (16011): Adding 0 node(s), including 0 DDIO, 0 PLL, 0 transceiver and 0 LCELL
 Warning (21074): Design contains 4 input pin(s) that do not drive logic
-    Warning (15610): No output dependent on input pin "SW[0]" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 15
-    Warning (15610): No output dependent on input pin "SW[4]" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 15
-    Warning (15610): No output dependent on input pin "SW[5]" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 15
-    Warning (15610): No output dependent on input pin "SW[6]" File: C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/projeto_vinho_top.v Line: 15
-Info (21057): Implemented 560 device resources after synthesis - the final resource count might be different
+    Warning (15610): No output dependent on input pin "SW[0]" File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 15
+    Warning (15610): No output dependent on input pin "SW[4]" File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 15
+    Warning (15610): No output dependent on input pin "SW[5]" File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 15
+    Warning (15610): No output dependent on input pin "SW[6]" File: /home/aluno/Downloads/PBLula_3-main_v5/projeto_vinho_top.v Line: 15
+Info (21057): Implemented 680 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 11 input pins
     Info (21059): Implemented 38 output pins
-    Info (21061): Implemented 511 logic cells
+    Info (21061): Implemented 631 logic cells
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 25 warnings
-    Info: Peak virtual memory: 4851 megabytes
-    Info: Processing ended: Wed Nov 26 22:37:48 2025
-    Info: Elapsed time: 00:00:09
-    Info: Total CPU time (on all processors): 00:00:21
+    Info: Peak virtual memory: 520 megabytes
+    Info: Processing ended: Fri Nov 28 14:38:26 2025
+    Info: Elapsed time: 00:00:04
+    Info: Total CPU time (on all processors): 00:00:14
 
 
 +------------------------------------------+
 ; Analysis & Synthesis Suppressed Messages ;
 +------------------------------------------+
-The suppressed messages can be found in C:/Users/Chopenaur/Documents/codigo/quartus/PBLula_3-main_v4/output_files/PBL3.map.smsg.
+The suppressed messages can be found in /home/aluno/Downloads/PBLula_3-main_v5/output_files/PBL3.map.smsg.
 
 

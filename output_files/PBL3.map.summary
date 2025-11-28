@@ -1,12 +1,12 @@
-Analysis & Synthesis Status : Successful - Wed Nov 26 22:37:48 2025
-Quartus Prime Version : 23.1std.1 Build 993 05/14/2024 SC Lite Edition
+Analysis & Synthesis Status : Successful - Fri Nov 28 14:38:26 2025
+Quartus Prime Version : 23.1std.0 Build 991 11/28/2023 SC Lite Edition
 Revision Name : PBL3
 Top-level Entity Name : projeto_vinho_top
 Family : MAX 10
-Total logic elements : 509
-    Total combinational functions : 506
-    Dedicated logic registers : 187
-Total registers : 187
+Total logic elements : 629
+    Total combinational functions : 618
+    Dedicated logic registers : 287
+Total registers : 287
 Total pins : 49
 Total virtual pins : 0
 Total memory bits : 0

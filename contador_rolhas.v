@@ -78,7 +78,7 @@ module contador_rolhas (
                     adicionar_rolhas_dispensador <= 1'b0;
                     
                     // Verifica se precisa repor (quando chegar a 5)
-                    if (contador_valor == LIMITE_REPOSICAO) begin
+                    if (contador_valor == LIMITE_REPOSICAO && estoque) begin
                         estado_dispensador <= DISPENSANDO;
                         dispensador_ativo <= 1'b1;
                     end

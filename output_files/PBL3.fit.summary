@@ -1,14 +1,14 @@
-Fitter Status : Successful - Wed Nov 26 22:38:02 2025
-Quartus Prime Version : 23.1std.1 Build 993 05/14/2024 SC Lite Edition
+Fitter Status : Successful - Fri Nov 28 14:38:33 2025
+Quartus Prime Version : 23.1std.0 Build 991 11/28/2023 SC Lite Edition
 Revision Name : PBL3
 Top-level Entity Name : projeto_vinho_top
 Family : MAX 10
 Device : 10M50DCF484C7G
 Timing Models : Final
-Total logic elements : 516 / 49,760 ( 1 % )
-    Total combinational functions : 507 / 49,760 ( 1 % )
-    Dedicated logic registers : 187 / 49,760 ( < 1 % )
-Total registers : 187
+Total logic elements : 630 / 49,760 ( 1 % )
+    Total combinational functions : 619 / 49,760 ( 1 % )
+    Dedicated logic registers : 287 / 49,760 ( < 1 % )
+Total registers : 287
 Total pins : 49 / 360 ( 14 % )
 Total virtual pins : 0
 Total memory bits : 0 / 1,677,312 ( 0 % )
